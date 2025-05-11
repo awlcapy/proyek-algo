@@ -1,0 +1,98 @@
+[
+    {
+        "customer_id": 1,
+        "ruangan_id": 2,
+        "tanggal": "2025-05-10",
+        "jam": 15,
+        "online": false,
+        "waktu_booking": "2025-05-10 21:09:33"
+    },
+    {
+        "customer_id": 1,
+        "ruangan_id": 2,
+        "tanggal": "2025-05-10",
+        "jam": 16,
+        "online": false,
+        "waktu_booking": "2025-05-10 21:09:33"
+    },
+    {
+        "customer_id": 1,
+        "ruangan_id": 2,
+        "tanggal": "2025-05-10",
+        "jam": 17,
+        "online": false,
+        "waktu_booking": "2025-05-10 21:09:33"
+    },
+    {
+        "customer_id": 2,
+        "ruangan_id": 5,
+        "tanggal": "2025-05-10",
+        "jam": 7,
+        "online": false,
+        "waktu_booking": "2025-05-10 21:17:13"
+    },
+    {
+        "customer_id": 2,
+        "ruangan_id": 5,
+        "tanggal": "2025-05-10",
+        "jam": 8,
+        "online": false,
+        "waktu_booking": "2025-05-10 21:17:13"
+    },
+    {
+        "customer_id": 2,
+        "ruangan_id": 5,
+        "tanggal": "2025-05-10",
+        "jam": 9,
+        "online": false,
+        "waktu_booking": "2025-05-10 21:17:13"
+    },
+    {
+        "customer_id": 3,
+        "ruangan_id": 2,
+        "tanggal": "2025-05-10",
+        "jam": 7,
+        "online": false,
+        "waktu_booking": "2025-05-10 21:23:17"
+    },
+    {
+        "customer_id": 3,
+        "ruangan_id": 2,
+        "tanggal": "2025-05-10",
+        "jam": 8,
+        "online": false,
+        "waktu_booking": "2025-05-10 21:23:17"
+    },
+    {
+        "customer_id": 4,
+        "ruangan_id": 1,
+        "tanggal": "2025-05-11",
+        "jam": 7,
+        "online": false,
+        "waktu_booking": "2025-05-11 19:38:04"
+    },
+    {
+        "customer_id": 4,
+        "ruangan_id": 1,
+        "tanggal": "2025-05-11",
+        "jam": 8,
+        "online": false,
+        "waktu_booking": "2025-05-11 19:38:04"
+    },
+    {
+        "customer_id": 4,
+        "ruangan_id": 1,
+        "tanggal": "2025-05-11",
+        "jam": 9,
+        "online": false,
+        "waktu_booking": "2025-05-11 19:38:04"
+    },
+    {
+        "customer_id": 4,
+        "ruangan_id": 1,
+        "tanggal": "2025-05-11",
+        "jam": 10,
+        "online": false,
+        "waktu_booking": "2025-05-11 19:38:04"
+    }
+]

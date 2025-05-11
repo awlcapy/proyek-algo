@@ -1,0 +1,90 @@
+[
+    {
+        "id": 1,
+        "nama": "sammy",
+        "booking": [
+            {
+                "ruangan_id": 2,
+                "tanggal": "2025-05-10",
+                "jam": 15
+            },
+            {
+                "ruangan_id": 2,
+                "tanggal": "2025-05-10",
+                "jam": 16
+            },
+            {
+                "ruangan_id": 2,
+                "tanggal": "2025-05-10",
+                "jam": 17
+            }
+        ]
+    },
+    {
+        "id": 2,
+        "nama": "daan",
+        "booking": [
+            {
+                "ruangan_id": 5,
+                "tanggal": "2025-05-10",
+                "jam": 7
+            },
+            {
+                "ruangan_id": 5,
+                "tanggal": "2025-05-10",
+                "jam": 8
+            },
+            {
+                "ruangan_id": 5,
+                "tanggal": "2025-05-10",
+                "jam": 9
+            }
+        ]
+    },
+    {
+        "id": 3,
+        "nama": "aulia",
+        "booking": [
+            {
+                "ruangan_id": 2,
+                "tanggal": "2025-05-10",
+                "jam": 7
+            },
+            {
+                "ruangan_id": 2,
+                "tanggal": "2025-05-10",
+                "jam": 8
+            }
+        ]
+    },
+    {
+        "id": 4,
+        "nama": "aulia",
+        "booking": [
+            {
+                "ruangan_id": 1,
+                "tanggal": "2025-05-11",
+                "jam": 7,
+                "online": false
+            },
+            {
+                "ruangan_id": 1,
+                "tanggal": "2025-05-11",
+                "jam": 8,
+                "online": false
+            },
+            {
+                "ruangan_id": 1,
+                "tanggal": "2025-05-11",
+                "jam": 9,
+                "online": false
+            },
+            {
+                "ruangan_id": 1,
+                "tanggal": "2025-05-11",
+                "jam": 10,
+                "online": false
+            }
+        ]
+    }
+]

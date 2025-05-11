@@ -1,0 +1,43 @@
+[
+    {
+        "id": 1,
+        "jenis": "Regular",
+        "kapasitas": 2,
+        "console": [
+            "PS4"
+        ]
+    },
+    {
+        "id": 2,
+        "jenis": "Regular",
+        "kapasitas": 2,
+        "console": [
+            "PS5"
+        ]
+    },
+    {
+        "id": 3,
+        "jenis": "VIP",
+        "kapasitas": 3,
+        "console": [
+            "Nintendo Switch"
+        ]
+    },
+    {
+        "id": 4,
+        "jenis": "VIP",
+        "kapasitas": 3,
+        "console": [
+            "PS5"
+        ]
+    },
+    {
+        "id": 5,
+        "jenis": "VVIP",
+        "kapasitas": 6,
+        "console": [
+            "Nintendo Switch",
+            "PS5"
+        ]
+    }
+]
