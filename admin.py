@@ -233,7 +233,7 @@ def delete_ruangan(ruangan_list, antrian_list, customer_list):
 def add_customer(customer_list, ruangan_list, antrian_list):
     clear_screen()
     print("\033[1;36m" + "═"*50)
-    print(" "*18 + "🌟 TAMBAH CUSTOMER BARU")
+    print(" "*12 + "🌟 TAMBAH CUSTOMER BARU")
     print("═"*50 + "\033[0m")
 
     print("\n\033[1;34m📝 Masukkan Data Customer\033[0m")
