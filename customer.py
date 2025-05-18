@@ -133,7 +133,7 @@ def online_booking(ruangan_list, history_list):
                 start_hour = available_hours[slot_choice-1]
                 
                 # Get duration
-                duration = int(input("Durasi (1-3 jam): "))
+                duration = int(input("Durasi (1-4 jam): "))
                 duration = max(1, min(4, duration))  # Clamp between 1-4
                 
                 # Validate slot
