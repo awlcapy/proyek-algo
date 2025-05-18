@@ -387,62 +387,134 @@ def add_customer(customer_list, ruangan_list, history_list):
     time.sleep(2)
 
 def view_customer(customer_list, ruangan_list):
-    if not customer_list:
-        print("\n\033[1;31mData customer kosong.\033[0m\n")
+    """
+    Menampilkan daftar customer yang memiliki booking hari ini
+    dengan format tabel yang rapi dan informatif.
+    
+    Args:
+        customer_list (list): Daftar customer
+        ruangan_list (list): Daftar ruangan
+    """
+    # Dapatkan tanggal hari ini
+    today = datetime.now().strftime('%Y-%m-%d')
+    
+    # Filter customer yang memiliki booking hari ini
+    today_customers = []
+    for customer in customer_list:
+        today_bookings = [
+            booking for booking in customer.get('booking', [])
+            if booking.get('tanggal') == today
+        ]
+        
+        if today_bookings:
+            today_customers.append({
+                'id': customer['id'],
+                'nama': customer['nama'],
+                'booking': today_bookings
+            })
+    
+    # Tampilkan header
+    print("\n\033[1;36m╔══════════════════════════════════════════════════════════════════════════════════╗")
+    print("║" + " " * 27 + "📋 DAFTAR CUSTOMER HARI INI" + " " * 28 + "║")
+    print("╚══════════════════════════════════════════════════════════════════════════════════╝\033[0m")
+    
+    if not today_customers:
+        print("\n\033[1;31mTidak ada booking untuk hari ini.\033[0m\n")
         return
     
-    print("\n\033[1;36m╔══════════════════════════════════════════════════════════════════════╗")
-    print("║" + " " * 26 + "📋 DAFTAR CUSTOMER" + " " * 26 + "║")
-    print("╚══════════════════════════════════════════════════════════════════════╝\033[0m")
+    # Definisi lebar kolom
+    col_width = {
+        'id': 5,
+        'nama': 20,
+        'ruangan': 10,
+        'tipe': 18,
+        'waktu': 15,
+        'status': 10
+    }
     
-    # Header with color and fixed widths
-    print("\033[1;35m{:<5} {:<20} {:<8} {:<15} {:<15} {:<10}\033[0m".format(
-        "ID", "Nama", "Ruang ID", "Jenis Ruang", "Jam", "Status"
-    ))
-    print("\033[1;34m" + "─" * 78 + "\033[0m")
+    # Header tabel
+    header = (
+        "\033[1;35m{id:<{id_w}} {nama:<{nama_w}} {ruangan:<{ruangan_w}} "
+        "{tipe:<{tipe_w}} {waktu:<{waktu_w}} {status:<{status_w}}\033[0m"
+    ).format(
+        id="ID", nama="Nama", ruangan="Ruangan", 
+        tipe="Tipe Ruangan", waktu="Waktu", status="Status",
+        id_w=col_width['id'], nama_w=col_width['nama'],
+        ruangan_w=col_width['ruangan'], tipe_w=col_width['tipe'],
+        waktu_w=col_width['waktu'], status_w=col_width['status']
+    )
     
-    for c in customer_list:
-        # Customer ID and Name
-        print("\033[1;32m{:<5}\033[0m \033[1;33m{:<20}\033[0m".format(c['id'], c['nama']), end="")
+    print(header)
+    print("\033[1;34m" + "─" * (sum(col_width.values()) + 5) + "\033[0m")
+    
+    # Tampilkan data
+    for customer in today_customers:
+        # Hitung jumlah baris yang dibutuhkan (1 customer + booking tambahan)
+        row_count = len(customer['booking'])
         
-        bookings = c.get('booking', [])
-        if not bookings:
-            print("\033[1;31m{:<8} {:<15} {:<15} {:<10}\033[0m".format("-", "-", "-", "-"))
-            print("\033[1;34m" + "─" * 78 + "\033[0m")
-            continue
+        for i, booking in enumerate(customer['booking']):
+            room = find_room(ruangan_list, booking['ruangan_id'])
             
-        # First booking details
-        first_booking = bookings[0]
-        room = next((r for r in ruangan_list if r['id'] == first_booking['ruangan_id']), None)
-        
-        # Perbaikan di sini - pastikan room adalah dictionary
-        room_type = room['jenis'] if isinstance(room, dict) and 'jenis' in room else "Unknown"
-        
-        print("\033[1;36m{:<8}\033[0m {:<15} \033[1;35m{:<15}\033[0m \033[1;{}m{:<10}\033[0m".format(
-            first_booking['ruangan_id'],
-            room_type,
-            f"{first_booking['jam']:02d}:00-{first_booking['jam']+1:02d}:00",
-            '32' if first_booking.get('online', False) else '31',
-            "Online" if first_booking.get('online', False) else "Offline"
-        ))
-        
-        # Additional bookings
-        for b in bookings[1:]:
-            room = next((r for r in ruangan_list if r['id'] == b['ruangan_id']), None)
+            # Baris pertama tampilkan ID dan Nama
+            if i == 0:
+                row = (
+                    "\033[1;32m{id:<{id_w}}\033[0m "
+                    "\033[1;33m{nama:<{nama_w}}\033[0m "
+                    "\033[1;36m{ruangan:<{ruangan_w}}\033[0m "
+                    "{tipe:<{tipe_w}} "
+                    "\033[1;35m{waktu:<{waktu_w}}\033[0m "
+                    "\033[1;{color}m{status:<{status_w}}\033[0m"
+                ).format(
+                    id=customer['id'],
+                    nama=customer['nama'],
+                    ruangan=booking['ruangan_id'],
+                    tipe=room.get('jenis', 'Unknown'),
+                    waktu=format_time(booking['jam']),
+                    status="Online" if booking.get('online', False) else "Offline",
+                    color='32' if booking.get('online', False) else '31',
+                    id_w=col_width['id'],
+                    nama_w=col_width['nama'],
+                    ruangan_w=col_width['ruangan'],
+                    tipe_w=col_width['tipe'],
+                    waktu_w=col_width['waktu'],
+                    status_w=col_width['status']
+                )
+            else:
+                # Baris tambahan (hanya tampilkan data booking)
+                row = (
+                    "{id:<{id_w}} {nama:<{nama_w}} "
+                    "\033[1;36m{ruangan:<{ruangan_w}}\033[0m "
+                    "{tipe:<{tipe_w}} "
+                    "\033[1;35m{waktu:<{waktu_w}}\033[0m "
+                    "\033[1;{color}m{status:<{status_w}}\033[0m"
+                ).format(
+                    id="",
+                    nama="",
+                    ruangan=booking['ruangan_id'],
+                    tipe=room.get('jenis', 'Unknown'),
+                    waktu=format_time(booking['jam']),
+                    status="Online" if booking.get('online', False) else "Offline",
+                    color='32' if booking.get('online', False) else '31',
+                    id_w=col_width['id'],
+                    nama_w=col_width['nama'],
+                    ruangan_w=col_width['ruangan'],
+                    tipe_w=col_width['tipe'],
+                    waktu_w=col_width['waktu'],
+                    status_w=col_width['status']
+                )
             
-            # Perbaikan yang sama untuk booking tambahan
-            room_type = room['jenis'] if isinstance(room, dict) and 'jenis' in room else "Unknown"
-            
-            print("{:<25} \033[1;36m{:<8}\033[0m {:<15} \033[1;35m{:<15}\033[0m \033[1;{}m{:<10}\033[0m".format(
-                "",  # Empty space under name
-                b['ruangan_id'],
-                room_type,
-                f"{b['jam']:02d}:00-{b['jam']+1:02d}:00",
-                '32' if b.get('online', False) else '31',
-                "Online" if b.get('online', False) else "Offline"
-            ))
+            print(row)
         
-        print("\033[1;34m" + "─" * 78 + "\033[0m")
+        print("\033[1;34m" + "─" * (sum(col_width.values()) + 5) + "\033[0m")
+
+def find_room(ruangan_list, room_id):
+    """Mencari data ruangan berdasarkan ID"""
+    return next((r for r in ruangan_list if r['id'] == room_id), {})
+
+def format_time(hour):
+    """Memformat jam booking ke format waktu"""
+    return f"{hour:02d}:00-{hour+1:02d}:00"
+
 
 def edit_customer(customer_list, ruangan_list):
     """Edit customer data with enhanced UI/UX"""

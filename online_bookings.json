@@ -9,5 +9,16 @@
         "durasi": 3,
         "status": "confirmed",
         "timestamp": "2025-05-18 18:51:09"
+    },
+    {
+        "customer_id": 10,
+        "nama": "salsabila",
+        "telepon": "085210716591",
+        "ruangan_id": 1,
+        "tanggal": "2025-05-19",
+        "jam_mulai": 9,
+        "durasi": 4,
+        "status": "confirmed",
+        "timestamp": "2025-05-19 00:17:22"
     }
 ]

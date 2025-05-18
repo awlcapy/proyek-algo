@@ -182,5 +182,65 @@
                 "online": false
             }
         ]
+    },
+    {
+        "id": 9,
+        "nama": "aulia",
+        "booking": [
+            {
+                "ruangan_id": 1,
+                "tanggal": "2025-05-19",
+                "jam": 7,
+                "online": false
+            },
+            {
+                "ruangan_id": 1,
+                "tanggal": "2025-05-19",
+                "jam": 8,
+                "online": false
+            }
+        ]
+    },
+    {
+        "id": 10,
+        "nama": "salsabila",
+        "booking": [
+            {
+                "ruangan_id": 1,
+                "tanggal": "2025-05-19",
+                "jam": 9,
+                "online": true
+            },
+            {
+                "ruangan_id": 1,
+                "tanggal": "2025-05-19",
+                "jam": 10,
+                "online": true
+            },
+            {
+                "ruangan_id": 1,
+                "tanggal": "2025-05-19",
+                "jam": 11,
+                "online": true
+            },
+            {
+                "ruangan_id": 1,
+                "tanggal": "2025-05-19",
+                "jam": 12,
+                "online": true
+            }
+        ]
+    },
+    {
+        "id": 11,
+        "nama": "abdul",
+        "booking": [
+            {
+                "ruangan_id": 1,
+                "tanggal": "2025-05-19",
+                "jam": 13,
+                "online": false
+            }
+        ]
     }
 ]
