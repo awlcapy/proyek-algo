@@ -262,29 +262,44 @@ def add_customer(customer_list, ruangan_list, history_list):
     # Tampilkan ruangan tersedia
     view_ruangan(ruangan_list)
     
+    print("\n\033[1;34m🏠 Pilih Ruangan untuk Booking\033[0m")
+    print("\033[1;35m" + "─"*50 + "\033[0m")
+    
     try:
-        ruangan_id = int(input("\nPilih ID ruangan untuk booking: "))
+        ruangan_id = int(input("\033[1;34m⌨ Masukkan ID ruangan: \033[0m"))
     except ValueError:
-        print("Input harus angka.")
+        print("\033[1;31m❌ Input harus berupa angka ID ruangan!\033[0m")
+        time.sleep(1)
         return
     
     selected_room = next((r for r in ruangan_list if r['id'] == ruangan_id), None)
     if not selected_room:
-        print("Ruangan tidak ditemukan.")
+        print("\033[1;31m❌ Ruangan dengan ID tersebut tidak ditemukan!\033[0m")
+        print("\033[1;33mℹ️ Silakan cek daftar ruangan di atas\033[0m")
+        time.sleep(1.5)
         return
+    
+    print(f"\n\033[1;32m✓ Ruangan dipilih: {selected_room['jenis']} (ID: {ruangan_id})\033[0m")
+    print(f"\033[1;36mKapasitas: {selected_room['kapasitas']} orang")
+    print(f"Console: {', '.join(selected_room['console'])}\033[0m")
+    print("\033[1;35m" + "─"*50 + "\033[0m")
     
     # Tampilkan jam tersedia dalam format menu
     available_hours = get_available_hours(history_list, ruangan_id, str(booking_date))
     
     if not available_hours:
-        print(f"\nRuangan ini sudah penuh pada tanggal {booking_date}.")
+        print(f"\n\033[1;31m❌ Ruangan ini sudah penuh pada tanggal {booking_date}.\033[0m")
+        time.sleep(1.5)
         return
     
-    print(f"\nJam tersedia pada {booking_date}:")
-    print("="*40)
+    print(f"\n\033[1;34m⏰ Jam Tersedia pada {booking_date}\033[0m")
+    print("\033[1;35m" + "─"*40 + "\033[0m")
+    
     for i, hour in enumerate(available_hours, 1):
-        print(f"{i}. {hour:02d}:00-{hour+1:02d}:00")  # Format 07:00-08:00
-    print("="*40)
+        print(f"\033[1;33m{i}. {hour:02d}:00 - {hour+1:02d}:00\033[0m")  # Contoh: 07:00 - 08:00
+    
+    print("\033[1;35m" + "─"*40 + "\033[0m")
+
     
     # Pilih jam dengan menu
     while True:
