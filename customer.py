@@ -1,5 +1,5 @@
-from utils import load_json, save_json, RUANGAN_FILE, CUSTOMER_FILE, ANTRIAN_FILE
-from admin import add_to_antrian
+from utils import load_json, save_json, RUANGAN_FILE, CUSTOMER_FILE, HISTORY_FILE
+from admin import add_to_history
 from datetime import datetime, date
 
 # Utility functions needed for customer operations
@@ -9,8 +9,8 @@ def validate_date(input_date):
     except ValueError:
         return None
 
-def get_available_hours(antrian_list, ruangan_id, tanggal):
-    booked_hours = [q['jam'] for q in antrian_list 
+def get_available_hours(history_list, ruangan_id, tanggal):
+    booked_hours = [q['jam'] for q in history_list 
                    if q['ruangan_id'] == ruangan_id and q['tanggal'] == tanggal]
     return [h for h in range(7, 23) if h not in booked_hours]
 
@@ -43,7 +43,7 @@ def view_ruangan(ruangan_list):
         print(f"{r['id']:<5} {r['jenis']:<8} {r['kapasitas']:<10} {console_str:<25}")
     print()
 
-def show_available_ruangan(ruangan_list, antrian_list):
+def show_available_ruangan(ruangan_list, history_list):
     print("\n--- Ruangan Tersedia per Tanggal dan Jam ---")
     
     # Input tanggal
@@ -59,7 +59,7 @@ def show_available_ruangan(ruangan_list, antrian_list):
         "ID", "Jenis", "Kapasitas", "Jam Tersedia", "Console"))
     
     for r in ruangan_list:
-        booked_hours = [q['jam'] for q in antrian_list 
+        booked_hours = [q['jam'] for q in history_list 
                        if q['ruangan_id'] == r['id'] and q['tanggal'] == str(booking_date)]
         available_hours = [h for h in range(7, 23) if h not in booked_hours]
         
@@ -78,7 +78,7 @@ def show_available_ruangan(ruangan_list, antrian_list):
               f"{', '.join(available_slots):<15} {console_str:<25}")
     print()
 
-def booking_ruangan_online(customer_list, ruangan_list, antrian_list):
+def booking_ruangan_online(customer_list, ruangan_list, history_list):
     print("\n--- Booking Ruangan Online ---")
     
     # Verifikasi customer
@@ -125,7 +125,7 @@ def booking_ruangan_online(customer_list, ruangan_list, antrian_list):
         return
     
     # Tampilkan jam tersedia
-    available_hours = get_available_hours(antrian_list, ruangan_id, str(booking_date))
+    available_hours = get_available_hours(history_list, ruangan_id, str(booking_date))
     
     if not available_hours:
         print(f"Ruangan ini sudah penuh pada tanggal {booking_date}.")
@@ -170,12 +170,12 @@ def booking_ruangan_online(customer_list, ruangan_list, antrian_list):
     
     cust.setdefault('booking', []).extend(booking_entries)
     
-    # Tambahkan ke antrian
+    # Tambahkan ke riwayat
     for hour in selected_hours:
-        add_to_antrian(antrian_list, customer_id, ruangan_id, str(booking_date), hour, online=True)
+        add_to_history(history_list, customer_id, ruangan_id, str(booking_date), hour, online=True)
     
     save_json(CUSTOMER_FILE, customer_list)
-    save_json(ANTRIAN_FILE, antrian_list)
+    save_json(HISTORY_FILE, history_list)
     
     print("\n=== Booking Berhasil ===")
     print(f"Customer: {cust['nama']}")
@@ -187,7 +187,7 @@ def booking_ruangan_online(customer_list, ruangan_list, antrian_list):
 def customer_menu():
     ruangan_list = load_json(RUANGAN_FILE)
     customer_list = load_json(CUSTOMER_FILE)
-    antrian_list = load_json(ANTRIAN_FILE)
+    history_list = load_json(HISTORY_FILE)
 
     while True:
         print("\n=== MENU CUSTOMER ===")
@@ -197,12 +197,12 @@ def customer_menu():
         choice = input("Pilih menu: ")
 
         if choice == '1':
-            show_available_ruangan(ruangan_list, antrian_list)
+            show_available_ruangan(ruangan_list, history_list)
         elif choice == '2':
-            booking_ruangan_online(customer_list, ruangan_list, antrian_list)
+            booking_ruangan_online(customer_list, ruangan_list, history_list)
         elif choice == '0':
             break
         else:
             print("Pilihan tidak valid.")
         save_json(CUSTOMER_FILE, customer_list)
-        save_json(ANTRIAN_FILE, antrian_list)
+        save_json(HISTORY_FILE, history_list)

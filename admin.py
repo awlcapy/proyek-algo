@@ -1,4 +1,4 @@
-from utils import load_json, save_json, next_id, RUANGAN_FILE, CUSTOMER_FILE, ANTRIAN_FILE
+from utils import load_json, save_json, next_id, RUANGAN_FILE, CUSTOMER_FILE, HISTORY_FILE
 from datetime import datetime, date
 import os
 import sys
@@ -24,8 +24,8 @@ def validate_date(input_date):
     except ValueError:
         return None
 
-def get_available_hours(antrian_list, ruangan_id, tanggal):
-    booked_hours = [q['jam'] for q in antrian_list 
+def get_available_hours(history_list, ruangan_id, tanggal):
+    booked_hours = [q['jam'] for q in history_list 
                    if q['ruangan_id'] == ruangan_id and q['tanggal'] == tanggal]
     return [h for h in range(7, 23) if h not in booked_hours]
 
@@ -181,7 +181,7 @@ def edit_ruangan(ruangan_list):
     print("\n\033[1;32m✓ Data ruangan berhasil diperbarui!\033[0m")
     time.sleep(1.5)
 
-def delete_ruangan(ruangan_list, antrian_list, customer_list):
+def delete_ruangan(ruangan_list, history_list, customer_list):
     view_ruangan(ruangan_list)
     if not ruangan_list:
         return
@@ -199,7 +199,7 @@ def delete_ruangan(ruangan_list, antrian_list, customer_list):
         time.sleep(1)
         return
     
-    booked = any(q['ruangan_id'] == ruangan_id for q in antrian_list)
+    booked = any(q['ruangan_id'] == ruangan_id for q in history_list)
     if booked:
         print("\033[1;31m❌ Ruangan ini memiliki booking aktif dan tidak dapat dihapus!\033[0m")
         time.sleep(1.5)
@@ -230,7 +230,7 @@ def delete_ruangan(ruangan_list, antrian_list, customer_list):
     time.sleep(1.5)
 
 # --- CUSTOMER OPERATIONS ---
-def add_customer(customer_list, ruangan_list, antrian_list):
+def add_customer(customer_list, ruangan_list, history_list):
     clear_screen()
     print("\033[1;36m" + "═"*50)
     print(" "*12 + "🌟 TAMBAH CUSTOMER BARU")
@@ -274,7 +274,7 @@ def add_customer(customer_list, ruangan_list, antrian_list):
         return
     
     # Tampilkan jam tersedia dalam format menu
-    available_hours = get_available_hours(antrian_list, ruangan_id, str(booking_date))
+    available_hours = get_available_hours(history_list, ruangan_id, str(booking_date))
     
     if not available_hours:
         print(f"\nRuangan ini sudah penuh pada tanggal {booking_date}.")
@@ -356,10 +356,10 @@ def add_customer(customer_list, ruangan_list, antrian_list):
     customer_list.append(new_customer)
 
     for hour in selected_hours:
-        add_to_antrian(antrian_list, cust_id, ruangan_id, str(booking_date), hour, online=False)
+        add_to_history(history_list, cust_id, ruangan_id, str(booking_date), hour, online=False)
 
     save_json(CUSTOMER_FILE, customer_list)
-    save_json(ANTRIAN_FILE, antrian_list)
+    save_json(HISTORY_FILE, history_list)
     
     print("\n\033[1;32m✅ BOOKING BERHASIL!\033[0m")
     print("\033[1;36m" + "═"*50 + "\033[0m")
@@ -476,7 +476,7 @@ def edit_customer(customer_list, ruangan_list):
     
     time.sleep(1.5)
 
-def delete_customer(customer_list, antrian_list, ruangan_list=None):
+def delete_customer(customer_list, history_list, ruangan_list=None):
     """Delete a customer with enhanced UI/UX and proper validation"""
     clear_screen()
     print("\033[1;36m" + "═"*50)
@@ -538,14 +538,14 @@ def delete_customer(customer_list, antrian_list, ruangan_list=None):
     # Perform deletion
     try:
         # Remove from queue
-        antrian_list[:] = [q for q in antrian_list if q['customer_id'] != cust_id]
+        history_list[:] = [q for q in history_list if q['customer_id'] != cust_id]
         
         # Remove customer
         customer_list.remove(cust)
         
         # Save changes
         save_json(CUSTOMER_FILE, customer_list)
-        save_json(ANTRIAN_FILE, antrian_list)
+        save_json(HISTORY_FILE, history_list)
         
         print("\n\033[1;32m✓ Customer berhasil dihapus!\033[0m")
         print(f"\033[1;36mID {cust_id} - {cust['nama']} telah dihapus dari sistem\033[0m")
@@ -556,20 +556,20 @@ def delete_customer(customer_list, antrian_list, ruangan_list=None):
     
     time.sleep(1.5)
 
-# --- ANTRIAN MANAGEMENT ---
-def view_antrian(antrian_list, customer_list, ruangan_list):
+# --- HISTORY MANAGEMENT ---
+def view_riwayat(history_list, customer_list, ruangan_list):
     clear_screen()
     print("\033[1;36m" + "═"*80)
-    print(" "*30 + "📋 DAFTAR ANTRIAN")
+    print(" "*30 + "📋 DAFTAR BOOKING")
     print("═"*80 + "\033[0m")
     
-    if not antrian_list:
-        print("\n\033[1;31m⚠ Tidak ada antrian booking yang tersedia!\033[0m\n")
+    if not history_list:
+        print("\n\033[1;31m⚠ Tidak ada riwayat booking yang tersedia!\033[0m\n")
         time.sleep(1)
         return
     
-    # Urutkan antrian berdasarkan tanggal dan jam
-    sorted_queue = sorted(antrian_list, key=lambda x: (x['tanggal'], x['jam']))
+    # Urutkan riwayat berdasarkan tanggal dan jam
+    sorted_queue = sorted(history_list, key=lambda x: (x['tanggal'], x['jam']))
     
     print("\n\033[1;35m{:<5} {:<12} {:<25} {:<15} {:<15} {:<10}\033[0m".format(
         "No", "Tanggal", "Customer", "Ruangan", "Jam", "Status"))
@@ -592,19 +592,19 @@ def view_antrian(antrian_list, customer_list, ruangan_list):
             status_text))
     
     print("\033[1;34m" + "─"*80 + "\033[0m")
-    print(f"\n\033[1;36mTotal Antrian: {len(antrian_list)}\033[0m")
+    print(f"\n\033[1;36mTotal riwayat: {len(history_list)}\033[0m")
     time.sleep(1.5)
 
-def add_to_antrian(antrian_list, customer_id, ruangan_id, tanggal, jam, online):
+def add_to_history(history_list, customer_id, ruangan_id, tanggal, jam, online):
     # Cek apakah ruangan sudah dipesan di tanggal dan jam yang sama
-    for q in antrian_list:
+    for q in history_list:
         if (q['ruangan_id'] == ruangan_id and 
             q['tanggal'] == tanggal and 
             q['jam'] == jam):
             print("\033[1;31m❌ Ruangan sudah dipesan pada jam tersebut!\033[0m")
             return False
     
-    antrian_list.append({
+    history_list.append({
         'customer_id': customer_id,
         'ruangan_id': ruangan_id,
         'tanggal': tanggal,
@@ -612,8 +612,8 @@ def add_to_antrian(antrian_list, customer_id, ruangan_id, tanggal, jam, online):
         'online': online,
         'waktu_booking': datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     })
-    save_json(ANTRIAN_FILE, antrian_list)
-    print("\033[1;32m✓ Booking berhasil ditambahkan ke antrian!\033[0m")
+    save_json(HISTORY_FILE, history_list)
+    print("\033[1;32m✓ Booking berhasil ditambahkan ke riwayat!\033[0m")
     return True
 
 # --- SEARCH & SORT FUNCTIONS ---
@@ -748,7 +748,7 @@ def search_sort_customer(customer_list):
 def admin_menu():
     ruangan_list = load_json(RUANGAN_FILE)
     customer_list = load_json(CUSTOMER_FILE)
-    antrian_list = load_json(ANTRIAN_FILE)
+    history_list = load_json(HISTORY_FILE)
 
     while True:
         clear_screen()
@@ -759,7 +759,7 @@ def admin_menu():
         print("\n\033[1;34m🛠️  MAIN MENU\033[0m")
         print("\033[1;36m1. 🏠 Kelola Ruangan Gaming")
         print("2. 👥 Kelola Data Customer")
-        print("3. 📋 Lihat Antrian Booking")
+        print("3. 📋 Lihat riwayat Booking")
         print("4. 🔍 Cari/Urutkan Data")
         print("5. 🔐 Ubah Password Admin")
         print("0. 🚪 Logout\033[0m")
@@ -793,7 +793,7 @@ def admin_menu():
                     edit_ruangan(ruangan_list)
                     input("\n\033[1;36mTekan Enter untuk melanjutkan...\033[0m")
                 elif sub_choice == '4':
-                    delete_ruangan(ruangan_list, antrian_list, customer_list)
+                    delete_ruangan(ruangan_list, history_list, customer_list)
                     input("\n\033[1;36mTekan Enter untuk melanjutkan...\033[0m")
                 elif sub_choice == '0':
                     break
@@ -818,7 +818,7 @@ def admin_menu():
                 sub_choice = input("\n\033[1;33m🔹 Pilih aksi: \033[0m")
                 
                 if sub_choice == '1':
-                    add_customer(customer_list, ruangan_list, antrian_list)
+                    add_customer(customer_list, ruangan_list, history_list)
                     input("\n\033[1;36mTekan Enter untuk melanjutkan...\033[0m")
                 elif sub_choice == '2':
                     view_customer(customer_list, ruangan_list)
@@ -827,7 +827,7 @@ def admin_menu():
                     edit_customer(customer_list, ruangan_list)
                     input("\n\033[1;36mTekan Enter untuk melanjutkan...\033[0m")
                 elif sub_choice == '4':
-                    delete_customer(customer_list, antrian_list, ruangan_list)
+                    delete_customer(customer_list, history_list, ruangan_list)
                     input("\n\033[1;36mTekan Enter untuk melanjutkan...\033[0m")
                 elif sub_choice == '0':
                     break
@@ -840,7 +840,7 @@ def admin_menu():
             print("\033[1;36m" + "="*50)
             print(" "*18 + "📋 BOOKING QUEUE")
             print("="*50 + "\033[0m")
-            view_antrian(antrian_list, customer_list, ruangan_list)
+            view_riwayat(history_list, customer_list, ruangan_list)
             input("\n\033[1;36mTekan Enter untuk melanjutkan...\033[0m")
 
         elif choice == '4':
@@ -889,4 +889,4 @@ def admin_menu():
         # Save changes after each operation
         save_json(RUANGAN_FILE, ruangan_list)
         save_json(CUSTOMER_FILE, customer_list)
-        save_json(ANTRIAN_FILE, antrian_list)
+        save_json(HISTORY_FILE, history_list)

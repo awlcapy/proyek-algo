@@ -23,7 +23,7 @@ def save_admin_credentials(credentials):
 # Constants
 RUANGAN_FILE = 'ruangan.json'
 CUSTOMER_FILE = 'customer.json'
-ANTRIAN_FILE = 'antrian.json'
+HISTORY_FILE = 'riwayat.json'
 
 def load_json(file_name):
     if not os.path.isfile(file_name):
