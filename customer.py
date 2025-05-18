@@ -134,7 +134,7 @@ def online_booking(ruangan_list, history_list):
                 
                 # Get duration
                 duration = int(input("Durasi (1-3 jam): "))
-                duration = max(1, min(3, duration))  # Clamp between 1-3
+                duration = max(1, min(4, duration))  # Clamp between 1-4
                 
                 # Validate slot
                 if all(h in available_hours for h in range(start_hour, start_hour + duration)):
