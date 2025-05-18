@@ -94,5 +94,61 @@
         "jam": 10,
         "online": false,
         "waktu_booking": "2025-05-11 19:38:04"
+    },
+    {
+        "customer_id": 5,
+        "ruangan_id": 1,
+        "tanggal": "2025-05-18",
+        "jam": 8,
+        "online": false,
+        "waktu_booking": "2025-05-18 17:52:08"
+    },
+    {
+        "customer_id": 5,
+        "ruangan_id": 1,
+        "tanggal": "2025-05-18",
+        "jam": 9,
+        "online": false,
+        "waktu_booking": "2025-05-18 17:52:08"
+    },
+    {
+        "customer_id": 5,
+        "ruangan_id": 1,
+        "tanggal": "2025-05-18",
+        "jam": 10,
+        "online": false,
+        "waktu_booking": "2025-05-18 17:52:08"
+    },
+    {
+        "customer_id": 5,
+        "ruangan_id": 1,
+        "tanggal": "2025-05-18",
+        "jam": 11,
+        "online": false,
+        "waktu_booking": "2025-05-18 17:52:08"
+    },
+    {
+        "customer_id": 6,
+        "ruangan_id": 1,
+        "tanggal": "2025-05-18",
+        "jam": 12,
+        "online": true,
+        "waktu_booking": "2025-05-18 18:51:09"
+    },
+    {
+        "customer_id": 6,
+        "ruangan_id": 1,
+        "tanggal": "2025-05-18",
+        "jam": 13,
+        "online": true,
+        "waktu_booking": "2025-05-18 18:51:09"
+    },
+    {
+        "customer_id": 6,
+        "ruangan_id": 1,
+        "tanggal": "2025-05-18",
+        "jam": 14,
+        "online": true,
+        "waktu_booking": "2025-05-18 18:51:09"
     }
 ]

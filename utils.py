@@ -24,6 +24,7 @@ def save_admin_credentials(credentials):
 RUANGAN_FILE = 'ruangan.json'
 CUSTOMER_FILE = 'customer.json'
 HISTORY_FILE = 'riwayat.json'
+ONLINE_FILE ='online_bookings.json'
 
 def load_json(file_name):
     if not os.path.isfile(file_name):

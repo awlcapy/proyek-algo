@@ -86,5 +86,59 @@
                 "online": false
             }
         ]
+    },
+    {
+        "id": 5,
+        "nama": "test",
+        "booking": [
+            {
+                "ruangan_id": 1,
+                "tanggal": "2025-05-18",
+                "jam": 8,
+                "online": false
+            },
+            {
+                "ruangan_id": 1,
+                "tanggal": "2025-05-18",
+                "jam": 9,
+                "online": false
+            },
+            {
+                "ruangan_id": 1,
+                "tanggal": "2025-05-18",
+                "jam": 10,
+                "online": false
+            },
+            {
+                "ruangan_id": 1,
+                "tanggal": "2025-05-18",
+                "jam": 11,
+                "online": false
+            }
+        ]
+    },
+    {
+        "id": 6,
+        "nama": "hhhh",
+        "booking": [
+            {
+                "ruangan_id": 1,
+                "tanggal": "2025-05-18",
+                "jam": 12,
+                "online": true
+            },
+            {
+                "ruangan_id": 1,
+                "tanggal": "2025-05-18",
+                "jam": 13,
+                "online": true
+            },
+            {
+                "ruangan_id": 1,
+                "tanggal": "2025-05-18",
+                "jam": 14,
+                "online": true
+            }
+        ]
     }
 ]

@@ -1,0 +1,13 @@
+[
+    {
+        "customer_id": 6,
+        "nama": "hhhh",
+        "telepon": "0987654321",
+        "ruangan_id": 1,
+        "tanggal": "2025-05-18",
+        "jam_mulai": 12,
+        "durasi": 3,
+        "status": "confirmed",
+        "timestamp": "2025-05-18 18:51:09"
+    }
+]
