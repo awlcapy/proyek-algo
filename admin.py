@@ -759,7 +759,7 @@ def admin_menu():
         print("\n\033[1;34m🛠️  MAIN MENU\033[0m")
         print("\033[1;36m1. 🏠 Kelola Ruangan Gaming")
         print("2. 👥 Kelola Data Customer")
-        print("3. 📋 Lihat riwayat Booking")
+        print("3. 📋 Lihat Riwayat Booking")
         print("4. 🔍 Cari/Urutkan Data")
         print("5. 🔐 Ubah Password Admin")
         print("0. 🚪 Logout\033[0m")
