@@ -1,6 +1,19 @@
 from utils import load_json, save_json, next_id, RUANGAN_FILE, CUSTOMER_FILE, HISTORY_FILE, ONLINE_FILE
 from admin import add_to_history
 from datetime import datetime, date
+import os
+import sys
+import time
+
+def clear_screen():
+    os.system('cls' if os.name == 'nt' else 'clear')
+
+def typewriter(text, delay=0.001):
+    for char in text:
+        sys.stdout.write(char)
+        sys.stdout.flush()
+        time.sleep(delay)
+    print()
 
 def validate_date(input_date):
     try:
@@ -196,18 +209,40 @@ def customer_menu():
     history_list = load_json(HISTORY_FILE)
     
     while True:
-        print("\n=== MENU CUSTOMER ===")
-        print("1. Lihat Ruangan Tersedia")
-        print("2. Booking Online")
-        print("0. Keluar")
+        clear_screen()
+        print("\033[1;35m" + "="*50)
+        print(" "*18 + "🎮 MENU PELANGGAN")
+        print("="*50 + "\033[0m")
         
-        choice = input("Pilih menu: ")
+        print("\n\033[1;34m🌟 MAIN MENU\033[0m")
+        print("\033[1;36m1. 🔍 Lihat Ruangan Tersedia")
+        print("2. 📅 Booking Online")
+        print("0. 🚪 Keluar\033[0m")
+        print("\033[1;35m" + "="*50 + "\033[0m")
         
+        choice = input("\n\033[1;33m🔹 Pilih menu (0-2): \033[0m")
+
         if choice == '1':
+            clear_screen()
+            print("\033[1;36m" + "="*50)
+            print(" "*18 + "🔍 RUANGAN TERSEDIA")
+            print("="*50 + "\033[0m")
             show_available_rooms(ruangan_list, history_list)
+            input("\n\033[1;36mTekan Enter untuk kembali...\033[0m")
+            
         elif choice == '2':
+            clear_screen()
+            print("\033[1;36m" + "="*50)
+            print(" "*18 + "📅 BOOKING ONLINE")
+            print("="*50 + "\033[0m")
             online_booking(ruangan_list, history_list)
+            input("\n\033[1;36mTekan Enter untuk kembali...\033[0m")
+            
         elif choice == '0':
+            print("\n\033[1;32m✔️ Terima kasih! Game on! 🎮\033[0m")
+            time.sleep(1)
             break
+            
         else:
-            print("Pilihan tidak valid!")
+            print("\n\033[1;31m❌ Pilihan tidak valid!\033[0m")
+            time.sleep(1)
