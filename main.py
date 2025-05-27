@@ -15,6 +15,30 @@ def typewriter(text, delay=0.001):
         time.sleep(delay)
     print()
 
+def progress_bar(progress, total):
+    percent = 100 * (progress / float(total))
+    bar_length = 30
+    filled_length = int(bar_length * progress // total)
+    bar = '\033[92m' + '█' * filled_length + '\033[0m' + '-' * (bar_length - filled_length)
+    print(f'\r|{bar}| {percent:.0f}%', end='\r')
+
+def loading_animation(duration=2):
+    animation = ['.  ', '.. ', '...']
+    start_time = time.time()
+    idx = 0
+    while (time.time() - start_time) < duration:
+        print(f"\r\033[1;36mLoading Customer Zone{animation[idx % len(animation)]}\033[0m", end='')
+        idx += 1
+        time.sleep(0.5)
+    print()
+
+def show_progress():
+    total = 40
+    for i in range(total + 1):
+        progress_bar(i, total)
+        time.sleep(0.04)
+    print()  # pindah baris setelah selesai
+
 def show_banner():
     clear_screen()
     print("\033[1;36m")  # Cyan color
@@ -59,8 +83,9 @@ def main_menu():
                 admin_menu()
         elif choice == '2':
             clear_screen()
-            print("\033[1;36m👾 Loading Customer Zone...\033[0m")
-            time.sleep(1)
+            loading_animation(duration=2)
+            show_progress()
+            time.sleep(0.5)
             clear_screen()
             customer_menu()
         elif choice == '0':
