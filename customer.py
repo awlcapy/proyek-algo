@@ -1,4 +1,4 @@
-from utils import load_json, save_json, next_id, RUANGAN_FILE, CUSTOMER_FILE, HISTORY_FILE, ONLINE_FILE
+from utils import load_json, save_json, next_id, RUANGAN_FILE, CUSTOMER_FILE, HISTORY_FILE, ONLINE_FILE, QUEUE_FILE
 from admin import add_to_history
 from datetime import datetime, date
 import os
@@ -237,13 +237,32 @@ def online_booking(ruangan_list, history_list):
                         'tanggal': str(booking_date),
                         'jam_mulai': start_hour,
                         'durasi': duration,
-                        'status': 'confirmed',
+                        'status': 'not confirmed',
                         'timestamp': datetime.now().strftime("%Y-%m-%d %H:%M:%S")
                     }
                     
                     online_bookings = load_json(ONLINE_FILE)
                     online_bookings.append(online_booking_data)
                     save_json(ONLINE_FILE, online_bookings)
+
+                    today = datetime.now().strftime('%Y-%m-%d')
+                    if str(booking_date) == today:
+                        try:
+                            queue_today = load_json(QUEUE_FILE)
+                        except FileNotFoundError:
+                            queue_today = []
+
+                    new_booking = {
+                        'customer_id': cust_id,
+                        'ruangan_id': room_id,
+                        'tanggal': str(booking_date),
+                        'jam_mulai': start_hour,
+                        'durasi': duration,
+                        'status': 'belum_masuk',
+                        'waktu_booking': datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                    }
+                    queue_today.append(new_booking)
+                    save_json(QUEUE_FILE, queue_today)
 
                     clear_screen()
                     print("\n" + "✧"*60)
@@ -272,6 +291,59 @@ def online_booking(ruangan_list, history_list):
             print("\033[1;31m❌ Input harus angka!\033[0m")
             time.sleep(0.5)
 
+def check_booking_status():
+    clear_screen()
+    show_banner()
+    print("\n" + "="*50)
+    animate_text("🔍 CEK STATUS BOOKING")
+    print("="*50)
+    
+    print("\n" + "✧"*40)
+    animate_text("👤 MASUKKAN DATA ANDA")
+    print("✧"*40)
+    
+    name = input("\033[1;33m📝 Nama Lengkap: \033[0m").strip()
+    phone = input("\033[1;33m📱 Nomor HP: \033[0m").strip()
+    
+    animate_text("\n🔍 Mencari data booking...")
+    loading_animation(1.5)
+    
+    # Check in online bookings
+    online_bookings = load_json(ONLINE_FILE)
+    customer_bookings = [b for b in online_bookings 
+                        if b['nama'].lower() == name.lower() 
+                        and b['telepon'] == phone]
+    
+    if not customer_bookings:
+        print("\n" + "✧"*60)
+        animate_text("❌ TIDAK ADA DATA BOOKING DITEMUKAN!")
+        print("✧"+"✧"*60)
+        print("\n\033[1;33mPeriksa kembali nama dan nomor HP yang Anda masukkan.\033[0m")
+        return
+    
+    ruangan_list = load_json(RUANGAN_FILE)
+    
+    clear_screen()
+    print("\n" + "✧"*70)
+    animate_text(f"📋 STATUS BOOKING UNTUK: {name.upper()}")
+    print("✧"*70)
+    
+    for booking in customer_bookings:
+        room = next((r for r in ruangan_list if r['id'] == booking['ruangan_id']), None)
+        room_name = room['jenis'] if room else f"Ruangan ID {booking['ruangan_id']}"
+        
+        status = "\033[1;32m✅ TELAH DIKONFIRMASI\033[0m" if booking['status'] == 'confirmed' else "\033[1;33m⌛ MENUNGGU KONFIRMASI\033[0m"
+        
+        print(f"\n\033[1;34m🎮 Ruangan: \033[1;33m{room_name}")
+        print(f"\033[1;34m📅 Tanggal: \033[1;33m{booking['tanggal']}")
+        print(f"\033[1;34m⏰ Waktu: \033[1;33m{booking['jam_mulai']:02d}:00-{booking['jam_mulai']+booking['durasi']:02d}:00")
+        print(f"\033[1;34m📞 No. HP: \033[1;33m{booking['telepon']}")
+        print(f"\033[1;34m🔄 Status: {status}")
+        print("-"*60)
+    
+    print("\n" + "✧"*70)
+    input("\n\033[1;36m🎮 Tekan Enter untuk kembali...\033[0m")
+
 def customer_menu():
     ruangan_list = load_json(RUANGAN_FILE)
     history_list = load_json(HISTORY_FILE)
@@ -281,25 +353,27 @@ def customer_menu():
         show_banner()
         animate_text("🛎️  CUSTOMER MENU:")
         
-        # ASCII menu box
+        # ASCII menu box - aligned version
         print("""
-\033[1;36m╔════════════════════════════════════╗
-║                                    ║
-║   \033[1;33m1. 🔍  Lihat Ruangan Tersedia     \033[1;36m║
-║   \033[1;33m2. 📅  Booking Online             \033[1;36m║
-║   \033[1;33m0. 🚪  Keluar                     \033[1;36m║
-║                                    ║
-╚════════════════════════════════════╝
+\033[1;36m╔══════════════════════════════════════╗
+║                                      ║
+║   \033[1;33m1. 🔍  Lihat Ruangan Tersedia      \033[1;36m║
+║   \033[1;33m2. 📅  Booking Online              \033[1;36m║
+║   \033[1;33m3. 📋  Cek Status Booking          \033[1;36m║
+║   \033[1;33m0. 🚪  Keluar                      \033[1;36m║
+║                                      ║
+╚══════════════════════════════════════╝
 \033[0m""")
+
         
         # Blinking cursor effect
         for _ in range(2):
-            print("\033[1;33m🎮 Pilih menu (0-2): \033[5m_\033[0m", end='\r')
+            print("\033[1;33m🎮 Pilih menu (0-3): \033[5m_\033[0m", end='\r')
             time.sleep(0.3)
             print(" " * 50, end='\r')
             time.sleep(0.3)
         
-        choice = input("\033[1;33m🎮 Pilih menu (0-2): \033[0m")
+        choice = input("\033[1;33m🎮 Pilih menu (0-3): \033[0m")
 
         if choice == '1':
             clear_screen()
@@ -311,6 +385,9 @@ def customer_menu():
         elif choice == '2':
             online_booking(ruangan_list, history_list)
             input("\n\033[1;36m🎮 Tekan Enter untuk kembali...\033[0m")
+            
+        elif choice == '3':
+            check_booking_status()
             
         elif choice == '0':
             clear_screen()

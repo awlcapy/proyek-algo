@@ -1,4 +1,4 @@
-from utils import load_json, save_json, next_id, RUANGAN_FILE, CUSTOMER_FILE, HISTORY_FILE
+from utils import load_json, save_json, next_id, RUANGAN_FILE, CUSTOMER_FILE, HISTORY_FILE, ONLINE_FILE, QUEUE_FILE
 from datetime import datetime, date
 import os
 import sys
@@ -229,134 +229,281 @@ def delete_ruangan(ruangan_list, history_list, customer_list):
     print("\n\033[1;32m✓ Ruangan berhasil dihapus!\033[0m")
     time.sleep(1.5)
 
-# --- CUSTOMER OPERATIONS ---
+def monitor_today_customers(customer_list, ruangan_list):
+    """Monitor today's customers with status management"""
+    clear_screen()
+    print("\033[1;36m" + "═"*80)
+    print(" "*25 + "👥 MONITOR CUSTOMER HARI INI")
+    print("═"*80 + "\033[0m")
+    
+    try:
+        queue_today = load_json(QUEUE_FILE)
+    except FileNotFoundError:
+        queue_today = []
+    
+    today = datetime.now().strftime('%Y-%m-%d')
+    today_bookings = [q for q in queue_today if q['tanggal'] == today]
+    
+    if not today_bookings:
+        print("\n\033[1;31m⚠ Tidak ada booking untuk hari ini!\033[0m\n")
+        input("\n\033[1;36mTekan Enter untuk kembali...\033[0m")
+        return
+    
+    # Sort by time
+    today_bookings.sort(key=lambda x: x['jam_mulai'])
+    
+    # Print table header
+    print("\n\033[1;35m{:<10} {:<25} {:<15} {:<15} {:<20} {:<10}\033[0m".format( 
+        "id", "Nama Customer", "Jam Booking", "Ruangan", "Status", "Aksi"))
+    print("\033[1;34m" + "─"*90 + "\033[0m")
+    
+    for booking in today_bookings:
+        # Get customer id
+        id = next((i for i in customer_list if i['id'] == booking['customer_id']), None)
+        customer_id = id['id'] if id else "Unknown"
+
+        # Get customer name
+        customer = next((c for c in customer_list if c['id'] == booking['customer_id']), None)
+        customer_name = customer['nama'] if customer else "Unknown"
+        
+        # Get room info
+        room = next((r for r in ruangan_list if r['id'] == booking['ruangan_id']), None)
+        room_name = f"{room['jenis']} {room['id']}" if room else "Unknown"
+        
+        # Format time
+        time_range = f"{booking['jam_mulai']:02d}:00-{booking['jam_mulai']+booking['durasi']:02d}:00"
+        
+        # Status display
+        status = booking.get('status', 'belum_masuk')
+        if status == 'belum_masuk':
+            status_display = "\033[1;33m✅ Belum Masuk\033[0m"
+            action = "[Masuk Ruangan]"
+        elif status == 'sedang_bermain':
+            status_display = "\033[1;32m🟢 Sedang Bermain\033[0m"
+            action = "[Selesai]"
+        else:  # selesai
+            status_display = "\033[1;31m🔴 Selesai\033[0m"
+            action = "-"
+        
+        # Highlight row if currently playing
+        row_prefix = "\033[1;42m" if status == 'sedang_bermain' else ""
+        row_suffix = "\033[0m" if status == 'sedang_bermain' else ""
+        
+        print(f"{row_prefix}{customer_id:<10} {customer_name:<25} {time_range:<15} {room_name:<15} {status_display:<20} {action:<10}{row_suffix}")
+    
+    print("\033[1;34m" + "─"*90 + "\033[0m")
+    
+    # Action selection
+    print("\n\033[1;34mPilih Aksi:\033[0m")
+    print("\033[1;32m1. Update Status Customer")
+    print("\033[1;33m0. Kembali ke Menu Utama\033[0m")
+    
+    while True:
+        choice = input("\n\033[1;34m⌨ Pilihan Anda (0-1): \033[0m")
+        
+        if choice == '1':
+            update_booking_status(queue_today, customer_list)
+            break
+        elif choice == '0':
+            break
+        else:
+            print("\033[1;31m❌ Pilihan tidak valid!\033[0m")
+
+def update_booking_status(queue_today, customer_list):
+    """Update booking status (belum_masuk -> sedang_bermain -> selesai)"""
+    try:
+        customer_id = int(input("\n\033[1;34m⌨ Masukkan ID Customer yang akan diupdate: \033[0m"))
+    except ValueError:
+        print("\033[1;31m❌ ID harus berupa angka!\033[0m")
+        time.sleep(1)
+        return
+    
+    booking = next((q for q in queue_today if q['customer_id'] == customer_id), None)
+    if not booking:
+        print("\033[1;31m❌ Booking tidak ditemukan!\033[0m")
+        time.sleep(1)
+        return
+    
+    customer = next((c for c in customer_list if c['id'] == customer_id), None)
+    if not customer:
+        print("\033[1;31m❌ Customer tidak ditemukan!\033[0m")
+        time.sleep(1)
+        return
+    
+    current_status = booking.get('status', 'belum_masuk')
+    
+    if current_status == 'belum_masuk':
+        new_status = 'sedang_bermain'
+        action = "masuk ruangan"
+    elif current_status == 'sedang_bermain':
+        new_status = 'selesai'
+        action = "selesai bermain"
+    else:
+        print("\033[1;31m❌ Status sudah selesai, tidak bisa diubah!\033[0m")
+        time.sleep(1)
+        return
+    
+    confirm = input(f"\n\033[1;34mKonfirmasi {action} untuk {customer['nama']}? (y/n): \033[0m").lower()
+    if confirm == 'y':
+        booking['status'] = new_status
+        save_json(QUEUE_FILE, queue_today)
+        print("\033[1;32m✓ Status berhasil diupdate!\033[0m")
+    else:
+        print("\033[1;33m✖ Update dibatalkan\033[0m")
+    
+    time.sleep(1)
+
+
 def add_customer(customer_list, ruangan_list, history_list):
     clear_screen()
-    print("\033[1;36m" + "═"*50)
-    print(" "*12 + "🌟 TAMBAH CUSTOMER BARU")
-    print("═"*50 + "\033[0m")
+    # Header with better visual alignment
+    print("\033[1;36m" + "═"*60)
+    print(" "*20 + "🌟 TAMBAH CUSTOMER BARU")
+    print("═"*60 + "\033[0m")
 
-    print("\n\033[1;34m📝 Masukkan Data Customer\033[0m")
-    print("\033[1;35m" + "─"*50 + "\033[0m")
+    # --- SECTION 1: CUSTOMER DETAILS ---
+    print("\n\033[1;34m📝 DATA CUSTOMER\033[0m")
+    print("\033[1;35m" + "─"*60 + "\033[0m")
 
+    # Name input with duplicate check
     while True:
         nama = input("\033[1;34m⌨ Nama Customer: \033[0m").strip()
         if not nama:
             print("\033[1;31m❌ Nama tidak boleh kosong!\033[0m")
             continue
+            
+        # Check for duplicates with better formatting
+        duplicates = [c for c in customer_list if c['nama'].lower() == nama.lower()]
+        if duplicates:
+            print("\n\033[1;33m⚠️ Peringatan: Nama sudah terdaftar!\033[0m")
+            print("\033[1;35m" + "─"*40 + "\033[0m")
+            for dup in duplicates:
+                booking_count = len(dup.get('booking', []))
+                print(f"\033[1;36mID: {dup['id']}\033[0m | Booking: \033[1;33m{booking_count}x\033[0m")
+            print("\033[1;35m" + "─"*40 + "\033[0m")
+            
+            confirm = input("\n\033[1;34mTetap buat customer baru? (y/t): \033[0m").lower()
+            if confirm != 'y':
+                print("\033[1;33m✖ Proses dibatalkan\033[0m")
+                time.sleep(1)
+                return None
         break
-    
-    # Input tanggal booking
-    print("\n\033[1;34m📅 Pilih Tanggal Booking\033[0m")
-    print("\033[1;35m" + "─"*50 + "\033[0m")
+
+    # --- SECTION 2: BOOKING DETAILS ---
+    print("\n\033[1;34m📅 DETAIL BOOKING\033[0m")
+    print("\033[1;35m" + "─"*60 + "\033[0m")
+
+    # Date input with validation
     while True:
         input_date = input("\033[1;34m⌨ Tanggal booking (YYYY-MM-DD): \033[0m").strip()
         booking_date = validate_date(input_date)
-        if booking_date:
-            if booking_date >= date.today():
-                break
+        if not booking_date:
+            print("\033[1;31m❌ Format tanggal salah. Gunakan format YYYY-MM-DD\033[0m")
+            continue
+        if booking_date < date.today():
             print("\033[1;31m❌ Tanggal tidak boleh di masa lalu!\033[0m")
-        else:
-            print("\033[1;31m❌ Format tanggal salah. Gunakan YYYY-MM-DD.\033[0m")
-    
-    # Tampilkan ruangan tersedia
+            continue
+        break
+
+    # Room selection with better display
+    print("\n\033[1;34m🏠 PILIH RUANGAN\033[0m")
     view_ruangan(ruangan_list)
     
-    print("\n\033[1;34m🏠 Pilih Ruangan untuk Booking\033[0m")
-    print("\033[1;35m" + "─"*50 + "\033[0m")
-    
     try:
-        ruangan_id = int(input("\033[1;34m⌨ Masukkan ID ruangan: \033[0m"))
+        ruangan_id = int(input("\n\033[1;34m⌨ Masukkan ID ruangan: \033[0m"))
     except ValueError:
-        print("\033[1;31m❌ Input harus berupa angka ID ruangan!\033[0m")
-        time.sleep(1)
-        return
-    
+        print("\033[1;31m❌ Harap masukkan angka ID ruangan!\033[0m")
+        time.sleep(1.5)
+        return None
+
     selected_room = next((r for r in ruangan_list if r['id'] == ruangan_id), None)
     if not selected_room:
-        print("\033[1;31m❌ Ruangan dengan ID tersebut tidak ditemukan!\033[0m")
-        print("\033[1;33mℹ️ Silakan cek daftar ruangan di atas\033[0m")
+        print("\033[1;31m❌ Ruangan tidak ditemukan! Silakan cek ID yang tersedia.\033[0m")
         time.sleep(1.5)
-        return
-    
-    print(f"\n\033[1;32m✓ Ruangan dipilih: {selected_room['jenis']} (ID: {ruangan_id})\033[0m")
-    print(f"\033[1;36mKapasitas: {selected_room['kapasitas']} orang")
-    print(f"Console: {', '.join(selected_room['console'])}\033[0m")
-    print("\033[1;35m" + "─"*50 + "\033[0m")
-    
-    # Tampilkan jam tersedia dalam format menu
-    available_hours = get_available_hours(history_list, ruangan_id, str(booking_date))
-    
-    if not available_hours:
-        print(f"\n\033[1;31m❌ Ruangan ini sudah penuh pada tanggal {booking_date}.\033[0m")
-        time.sleep(1.5)
-        return
-    
-    print(f"\n\033[1;34m⏰ Jam Tersedia pada {booking_date}\033[0m")
-    print("\033[1;35m" + "─"*40 + "\033[0m")
-    
-    for i, hour in enumerate(available_hours, 1):
-        print(f"\033[1;33m{i}. {hour:02d}:00 - {hour+1:02d}:00\033[0m")  # Contoh: 07:00 - 08:00
-    
-    print("\033[1;35m" + "─"*40 + "\033[0m")
+        return None
 
-    
-    # Pilih jam dengan menu
+    # Display selected room info with better formatting
+    print("\n\033[1;32m✓ RUANGAN DIPILIH:\033[0m")
+    print("\033[1;36m" + "─"*40 + "\033[0m")
+    print(f"\033[1;33mTipe     : {selected_room['jenis']}")
+    print(f"ID       : {ruangan_id}")
+    print(f"Kapasitas: {selected_room['kapasitas']} orang")
+    print(f"Console  : {', '.join(selected_room['console'])}\033[0m")
+    print("\033[1;36m" + "─"*40 + "\033[0m")
+
+    # Available hours with better display
+    available_hours = get_available_hours(history_list, ruangan_id, str(booking_date))
+    if not available_hours:
+        print(f"\n\033[1;31m❌ Ruangan penuh pada {booking_date}!\033[0m")
+        time.sleep(1.5)
+        return None
+
+    print(f"\n\033[1;34m⏰ JAM TERSEDIA ({booking_date})\033[0m")
+    print("\033[1;35m" + "─"*50 + "\033[0m")
+    for i, hour in enumerate(available_hours, 1):
+        print(f"\033[1;33m{i:>2}. {hour:02d}:00 - {hour+1:02d}:00\033[0m")
+    print("\033[1;35m" + "─"*50 + "\033[0m")
+
+    # Time selection with validation
+    # Time selection: choose start hour and duration
     while True:
         try:
-            choice = int(input("\n\033[1;34m⌨ Pilih nomor jam (contoh: 1): \033[0m"))
+            choice = int(input("\n\033[1;34m⌨ Pilih jam mulai (nomor): \033[0m"))
             if 1 <= choice <= len(available_hours):
-                jam_mulai = available_hours[choice-1]
+                jam_mulai = available_hours[choice - 1]
                 break
             else:
-                print(f"\033[1;31m❌ Harap pilih antara 1-{len(available_hours)}!\033[0m")
+                print(f"\033[1;31m❌ Harap pilih nomor antara 1 - {len(available_hours)}!\033[0m")
         except ValueError:
-            print("\033[1;31m❌ Input harus berupa angka!\033[0m")
-    
-    # Input durasi
-    print("\n\033[1;34m⏳ Pilih Durasi Booking\033[0m")
-    print("\033[1;35m" + "─"*50 + "\033[0m")
-    try:
-        durasi = int(input("\033[1;34m⌨ Durasi (jam, max 4 jam): \033[0m"))
-        durasi = min(durasi, 4)
-    except ValueError:
-        print("\033[1;31m❌ Input harus berupa angka!\033[0m")
-        time.sleep(1)
-        return
+            print("\033[1;31m❌ Input tidak valid!\033[0m")
 
-    if durasi < 1:
-        print("\033[1;31m❌ Durasi minimal 1 jam!\033[0m")
-        time.sleep(1)
-        return
+    while True:
+        try:
+            durasi = int(input("\033[1;34m⌨ Mau booking berapa jam?: \033[0m"))
+            if durasi < 1:
+                print("\033[1;31m❌ Durasi minimal 1 jam!\033[0m")
+                continue
+            selected_hours = range(jam_mulai, jam_mulai + durasi)
+            if jam_mulai + durasi > 23:
+                print("\033[1;31m❌ Melebihi jam operasional (22:00)!\033[0m")
+                continue
+            if all(hour in available_hours for hour in selected_hours):
+                break
+            else:
+                print("\033[1;31m❌ Salah satu jam sudah dibooking. Coba durasi lebih pendek!\033[0m")
+        except ValueError:
+            print("\033[1;31m❌ Input tidak valid!\033[0m")
 
+
+    # Validate duration and time slots
     selected_hours = range(jam_mulai, jam_mulai + durasi)
     for hour in selected_hours:
         if hour > 22:
             print("\033[1;31m❌ Melebihi jam operasional (22:00)!\033[0m")
             time.sleep(1)
-            return
+            return None
         if hour not in available_hours:
-            print(f"\033[1;31m❌ Jam {hour}:00 sudah dipesan!\033[0m")
+            print(f"\033[1;31m❌ Jam {hour:02d}:00 sudah dipesan!\033[0m")
             time.sleep(1)
-            return
-    
-    # Konfirmasi booking
-    print("\n\033[1;34m🔍 Ringkasan Booking:\033[0m")
-    print("\033[1;36m" + "─"*50 + "\033[0m")
-    print(f"\033[1;33m• Nama     : {nama}")
-    print(f"• Ruangan  : {selected_room['jenis']} (ID: {ruangan_id})")
-    print(f"• Tanggal  : {booking_date}")
-    print(f"• Jam      : {jam_mulai:02d}:00-{jam_mulai+durasi:02d}:00")
-    print(f"• Durasi   : {durasi} jam\033[0m")
-    print("\033[1;36m" + "─"*50 + "\033[0m")
-    
-    confirm = input("\n\033[1;34m🔎 Konfirmasi booking (y/n)? \033[0m").lower()
+            return None
+
+    # --- SECTION 3: CONFIRMATION ---
+    print("\n\033[1;34m🔍 RINGKASAN BOOKING\033[0m")
+    print("\033[1;36m" + "═"*60 + "\033[0m")
+    print(f"\033[1;33m{'Nama':<10}: {nama}")
+    print(f"{'Ruangan':<10}: {selected_room['jenis']} (ID: {ruangan_id})")
+    print(f"{'Tanggal':<10}: {booking_date}")
+    print(f"{'Jam':<10}: {jam_mulai:02d}:00-{jam_mulai+durasi:02d}:00")
+    print(f"{'Durasi':<10}: {durasi} jam\033[0m")
+    print("\033[1;36m" + "═"*60 + "\033[0m")
+
+    confirm = input("\n\033[1;34mKonfirmasi booking? (y/n): \033[0m").lower()
     if confirm != 'y':
         print("\033[1;33m⚠️ Booking dibatalkan\033[0m")
         time.sleep(1)
-        return
-    
-    # Simpan data
+        return None
+
+    # --- SECTION 4: SAVE DATA ---
     cust_id = next_id(customer_list)
     new_customer = {
         'id': cust_id,
@@ -371,20 +518,44 @@ def add_customer(customer_list, ruangan_list, history_list):
     customer_list.append(new_customer)
 
     for hour in selected_hours:
-        add_to_history(history_list, cust_id, ruangan_id, str(booking_date), hour, online=False)
+        add_to_history(history_list, cust_id, ruangan_id, str(booking_date), hour, False)
+
+    today = datetime.now().strftime('%Y-%m-%d')
+    if str(booking_date) == today:
+        try:
+            queue_today = load_json(QUEUE_FILE)
+        except FileNotFoundError:
+            queue_today = []
+            
+        new_booking = {
+            'customer_id': cust_id,
+            'ruangan_id': ruangan_id,
+            'tanggal': str(booking_date),
+            'jam_mulai': jam_mulai,
+            'durasi': durasi,
+            'status': 'belum_masuk',
+            'waktu_booking': datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        }
+        queue_today.append(new_booking)
+        save_json(QUEUE_FILE, queue_today)
+
 
     save_json(CUSTOMER_FILE, customer_list)
     save_json(HISTORY_FILE, history_list)
+
+    # Success message with better formatting
+    print("\n\033[1;32m" + "═"*60)
+    print(" "*20 + "✅ BOOKING BERHASIL!")
+    print("═"*60 + "\033[0m")
+    print(f"\033[1;36m{'ID Customer':<15}: {cust_id}")
+    print(f"{'Nama':<15}: {nama}")
+    print(f"{'Ruangan':<15}: {selected_room['jenis']} (ID: {ruangan_id})")
+    print(f"{'Tanggal':<15}: {booking_date}")
+    print(f"{'Waktu':<15}: {jam_mulai:02d}:00-{jam_mulai+durasi:02d}:00\033[0m")
+    print("\033[1;32m" + "═"*60 + "\033[0m")
     
-    print("\n\033[1;32m✅ BOOKING BERHASIL!\033[0m")
-    print("\033[1;36m" + "═"*50 + "\033[0m")
-    print(f"\033[1;33mID Customer : {cust_id}")
-    print(f"Nama        : {nama}")
-    print(f"Ruangan     : {selected_room['jenis']}")
-    print(f"Tanggal     : {booking_date}")
-    print(f"Jam         : {jam_mulai:02d}:00-{jam_mulai+durasi:02d}:00\033[0m")
-    print("\033[1;36m" + "═"*50 + "\033[0m")
-    time.sleep(2)
+    time.sleep(3)
+    return cust_id
 
 def view_customer(customer_list, ruangan_list):
     """
@@ -407,10 +578,29 @@ def view_customer(customer_list, ruangan_list):
         ]
         
         if today_bookings:
+            # Hitung waktu mulai dan selesai
+            jam_list = sorted([b['jam'] for b in today_bookings])
+            jam_mulai = min(jam_list)
+            jam_selesai = max(jam_list) + 1
+            durasi = jam_selesai - jam_mulai
+            
+            # Dapatkan info ruangan
+            room_id = today_bookings[0]['ruangan_id']
+            room = next((r for r in ruangan_list if r['id'] == room_id), None)
+            tipe = room['jenis'] if room else 'Unknown'
+            
+            # Tentukan status
+            status = "Online" if any(b.get('online', False) for b in today_bookings) else "Offline"
+            
             today_customers.append({
                 'id': customer['id'],
                 'nama': customer['nama'],
-                'booking': today_bookings
+                'ruangan': room_id,
+                'tipe': tipe,
+                'jam_mulai': jam_mulai,
+                'jam_selesai': jam_selesai,
+                'durasi': durasi,
+                'status': status
             })
     
     # Tampilkan header
@@ -422,90 +612,190 @@ def view_customer(customer_list, ruangan_list):
         print("\n\033[1;31mTidak ada booking untuk hari ini.\033[0m\n")
         return
     
-    # Definisi lebar kolom
+    # Definisi lebar kolom yang disesuaikan
     col_width = {
         'id': 5,
-        'nama': 20,
+        'nama': 20, 
         'ruangan': 10,
         'tipe': 18,
-        'waktu': 15,
-        'status': 10
+        'waktu': 19,
+        'durasi': 8,  # Lebar untuk "X jam"
+        'status': 10  # Lebar untuk status
     }
-    
-    # Header tabel
+
+    # Header tabel dengan alignment yang tepat
     header = (
-        "\033[1;35m{id:<{id_w}} {nama:<{nama_w}} {ruangan:<{ruangan_w}} "
-        "{tipe:<{tipe_w}} {waktu:<{waktu_w}} {status:<{status_w}}\033[0m"
-    ).format(
-        id="ID", nama="Nama", ruangan="Ruangan", 
-        tipe="Tipe Ruangan", waktu="Waktu", status="Status",
-        id_w=col_width['id'], nama_w=col_width['nama'],
-        ruangan_w=col_width['ruangan'], tipe_w=col_width['tipe'],
-        waktu_w=col_width['waktu'], status_w=col_width['status']
+        f"\033[1;35m{'ID':<{col_width['id']}} "
+        f"{'Nama':<{col_width['nama']}} "
+        f"{'Ruangan':<{col_width['ruangan']}} "
+        f"{'Tipe Ruangan':<{col_width['tipe']}} "
+        f"{'Waktu Booking':<{col_width['waktu']}} "
+        f"{'Durasi':^{col_width['durasi']}} "
+        f"{'Status':^{col_width['status']}}\033[0m"
     )
+
     
     print(header)
-    print("\033[1;34m" + "─" * (sum(col_width.values()) + 5) + "\033[0m")
+    print("\033[1;34m" + "─" * (sum(col_width.values()) + 6) + "\033[0m")
     
     # Tampilkan data
     for customer in today_customers:
-        # Hitung jumlah baris yang dibutuhkan (1 customer + booking tambahan)
-        row_count = len(customer['booking'])
+        time_range = f"{customer['jam_mulai']:02d}:00-{customer['jam_selesai']:02d}:00"
+        color = '32' if customer['status'] == "Online" else '31'
+        durasi_text = f"{customer['durasi']} jam" 
         
-        for i, booking in enumerate(customer['booking']):
-            room = find_room(ruangan_list, booking['ruangan_id'])
-            
-            # Baris pertama tampilkan ID dan Nama
-            if i == 0:
-                row = (
-                    "\033[1;32m{id:<{id_w}}\033[0m "
-                    "\033[1;33m{nama:<{nama_w}}\033[0m "
-                    "\033[1;36m{ruangan:<{ruangan_w}}\033[0m "
-                    "{tipe:<{tipe_w}} "
-                    "\033[1;35m{waktu:<{waktu_w}}\033[0m "
-                    "\033[1;{color}m{status:<{status_w}}\033[0m"
-                ).format(
-                    id=customer['id'],
-                    nama=customer['nama'],
-                    ruangan=booking['ruangan_id'],
-                    tipe=room.get('jenis', 'Unknown'),
-                    waktu=format_time(booking['jam']),
-                    status="Online" if booking.get('online', False) else "Offline",
-                    color='32' if booking.get('online', False) else '31',
-                    id_w=col_width['id'],
-                    nama_w=col_width['nama'],
-                    ruangan_w=col_width['ruangan'],
-                    tipe_w=col_width['tipe'],
-                    waktu_w=col_width['waktu'],
-                    status_w=col_width['status']
-                )
-            else:
-                # Baris tambahan (hanya tampilkan data booking)
-                row = (
-                    "{id:<{id_w}} {nama:<{nama_w}} "
-                    "\033[1;36m{ruangan:<{ruangan_w}}\033[0m "
-                    "{tipe:<{tipe_w}} "
-                    "\033[1;35m{waktu:<{waktu_w}}\033[0m "
-                    "\033[1;{color}m{status:<{status_w}}\033[0m"
-                ).format(
-                    id="",
-                    nama="",
-                    ruangan=booking['ruangan_id'],
-                    tipe=room.get('jenis', 'Unknown'),
-                    waktu=format_time(booking['jam']),
-                    status="Online" if booking.get('online', False) else "Offline",
-                    color='32' if booking.get('online', False) else '31',
-                    id_w=col_width['id'],
-                    nama_w=col_width['nama'],
-                    ruangan_w=col_width['ruangan'],
-                    tipe_w=col_width['tipe'],
-                    waktu_w=col_width['waktu'],
-                    status_w=col_width['status']
-                )
-            
-            print(row)
+        # Perbaikan bagian formatting row
+        row = (
+            f"\033[1;32m{customer['id']:<{col_width['id']}}\033[0m "
+            f"\033[1;33m{customer['nama']:<{col_width['nama']}}\033[0m "
+            f"\033[1;36m{customer['ruangan']:<{col_width['ruangan']}}\033[0m "
+            f"{customer['tipe']:<{col_width['tipe']}} "
+            f"\033[1;35m{time_range:<{col_width['waktu']}}\033[0m "
+            f"{durasi_text:<{col_width['durasi']}}"  # Center align durasi
+            f"\033[1;{color}m{customer['status']:^{col_width['status']}}\033[0m"  # Center align status
+        ).format(
+            id=customer['id'],
+            nama=customer['nama'],
+            ruangan=customer['ruangan'],
+            tipe=customer['tipe'],
+            waktu=time_range,
+            durasi=customer['durasi'],
+            status=customer['status'],
+            color=color,
+            id_w=col_width['id'],
+            nama_w=col_width['nama'],
+            ruangan_w=col_width['ruangan'],
+            tipe_w=col_width['tipe'],
+            waktu_w=col_width['waktu'],
+            durasi_w=col_width['durasi']-5,  # dikurangi untuk menyesuaikan dengan teks " jam"
+            status_w=col_width['status']
+        )
+
+        print(row)
+
+    print("\033[1;34m" + "─" * (sum(col_width.values()) + 6) + "\033[0m")
+
+def view_online_bookings(ruangan_list):
+    """Menampilkan daftar booking online dengan format tabel"""
+    try:
+        online_bookings = load_json(ONLINE_FILE)
+    except FileNotFoundError:
+        online_bookings = []
+    
+    clear_screen()
+    print("\033[1;36m" + "═"*80)
+    print(" "*25 + "📱 BOOKING ONLINE")
+    print("═"*80 + "\033[0m")
+    
+    if not online_bookings:
+        print("\n\033[1;31m⚠ Tidak ada booking online yang tersedia!\033[0m\n")
+        time.sleep(1)
+        return
+    
+    # Urutkan berdasarkan tanggal dan jam
+    sorted_bookings = sorted(online_bookings, key=lambda x: (x['tanggal'], x['jam_mulai']))
+    
+    # Header tabel
+    print("\n\033[1;35m{:<5} {:<15} {:<15} {:<12} {:<20} {:<15}\033[0m".format(
+        "ID", "Nama", "Telepon", "Ruangan", "Tanggal & Waktu", "Status"))
+    print("\033[1;34m" + "─"*80 + "\033[0m")
+    
+    for booking in sorted_bookings:
+        # Dapatkan info ruangan
+        room = next((r for r in ruangan_list if r['id'] == booking['ruangan_id']), None)
+        room_type = room['jenis'] if room else "Unknown"
         
-        print("\033[1;34m" + "─" * (sum(col_width.values()) + 5) + "\033[0m")
+        # Format waktu
+        waktu = f"{booking['jam_mulai']:02d}:00-{booking['jam_mulai']+booking['durasi']:02d}:00"
+        
+        # Warna status
+        status_color = "32" if booking['status'] == "confirmed" else "33"  # Hijau untuk confirmed, kuning untuk lainnya
+        
+        print("{:<5} \033[1;33m{:<15}\033[0m {:<15} {:<12} {:<20} \033[1;{}m{:<15}\033[0m".format(
+            booking['customer_id'],
+            booking['nama'],
+            booking['telepon'],
+            room_type,
+            f"{booking['tanggal']} {waktu}",
+            status_color,
+            booking['status'].upper()))
+    
+    print("\033[1;34m" + "─"*80 + "\033[0m")
+    print(f"\n\033[1;36mTotal booking online: {len(online_bookings)}\033[0m")
+    
+    # Tampilkan menu aksi
+    print("\n\033[1;34mPilih Aksi:\033[0m")
+    print("\033[1;32m1. Konfirmasi Booking")
+    print("\033[1;31m2. Batalkan Booking")
+    print("\033[1;33m0. Kembali\033[0m")
+    
+    while True:
+        choice = input("\n\033[1;34m⌨ Pilihan Anda (0-2): \033[0m")
+        
+        if choice == '1':
+            confirm_booking(online_bookings, ruangan_list)
+            break
+        elif choice == '2':
+            cancel_booking(online_bookings)
+            break
+        elif choice == '0':
+            break
+        else:
+            print("\033[1;31m❌ Pilihan tidak valid!\033[0m")
+    
+    time.sleep(1)
+
+def confirm_booking(online_bookings, ruangan_list):
+    """Konfirmasi booking online"""
+    try:
+        booking_id = int(input("\n\033[1;34m⌨ Masukkan ID Customer yang akan dikonfirmasi: \033[0m"))
+    except ValueError:
+        print("\033[1;31m❌ ID harus berupa angka!\033[0m")
+        return
+    
+    booking = next((b for b in online_bookings if b['customer_id'] == booking_id), None)
+    if not booking:
+        print("\033[1;31m❌ Booking tidak ditemukan!\033[0m")
+        return
+    
+    # Tampilkan detail booking
+    room = next((r for r in ruangan_list if r['id'] == booking['ruangan_id']), None)
+    print("\n\033[1;36mDetail Booking:\033[0m")
+    print(f"\033[1;33mNama    : {booking['nama']}")
+    print(f"Telepon : {booking['telepon']}")
+    print(f"Ruangan : {room['jenis'] if room else 'Unknown'} (ID: {booking['ruangan_id']})")
+    print(f"Tanggal : {booking['tanggal']}")
+    print(f"Waktu   : {booking['jam_mulai']:02d}:00-{booking['jam_mulai']+booking['durasi']:02d}:00")
+    print(f"Durasi  : {booking['durasi']} jam\033[0m")
+    
+    confirm = input("\n\033[1;34mKonfirmasi booking ini? (y/n): \033[0m").lower()
+    if confirm == 'y':
+        booking['status'] = "confirmed"
+        save_json(ONLINE_FILE, online_bookings)
+        print("\033[1;32m✓ Booking berhasil dikonfirmasi!\033[0m")
+    else:
+        print("\033[1;33m✖ Konfirmasi dibatalkan\033[0m")
+
+def cancel_booking(online_bookings):
+    """Batalkan booking online"""
+    try:
+        booking_id = int(input("\n\033[1;34m⌨ Masukkan ID Customer yang akan dibatalkan: \033[0m"))
+    except ValueError:
+        print("\033[1;31m❌ ID harus berupa angka!\033[0m")
+        return
+    
+    booking = next((b for b in online_bookings if b['customer_id'] == booking_id), None)
+    if not booking:
+        print("\033[1;31m❌ Booking tidak ditemukan!\033[0m")
+        return
+    
+    confirm = input("\n\033[1;31mYakin ingin membatalkan booking ini? (y/n): \033[0m").lower()
+    if confirm == 'y':
+        online_bookings.remove(booking)
+        save_json(ONLINE_FILE, online_bookings)
+        print("\033[1;32m✓ Booking berhasil dibatalkan!\033[0m")
+    else:
+        print("\033[1;33m✖ Pembatalan dibatalkan\033[0m")
 
 def find_room(ruangan_list, room_id):
     """Mencari data ruangan berdasarkan ID"""
@@ -847,12 +1137,14 @@ def admin_menu():
         print("\033[1;36m1. 🏠 Kelola Ruangan Gaming")
         print("2. 👥 Kelola Data Customer")
         print("3. 📋 Lihat Riwayat Booking")
-        print("4. 🔍 Cari/Urutkan Data")
-        print("5. 🔐 Ubah Password Admin")
+        print("4. 📱 Lihat Booking Online")
+        print("5. 👀 Monitor Customer Hari Ini")
+        print("6. 🔍 Cari/Urutkan Data")
+        print("7. 🔐 Ubah Password Admin")
         print("0. 🚪 Logout\033[0m")
         print("\033[1;35m" + "="*50 + "\033[0m")
         
-        choice = input("\n\033[1;33m🔹 Pilih menu (0-5): \033[0m")
+        choice = input("\n\033[1;33m🔹 Pilih menu (0-7): \033[0m")
 
         if choice == '1':
             while True:
@@ -930,7 +1222,15 @@ def admin_menu():
             view_riwayat(history_list, customer_list, ruangan_list)
             input("\n\033[1;36mTekan Enter untuk melanjutkan...\033[0m")
 
-        elif choice == '4':
+        elif choice == '4':  # Tambahan untuk menu booking online
+            view_online_bookings(ruangan_list)
+            input("\n\033[1;36mTekan Enter untuk melanjutkan...\033[0m")
+
+        elif choice == '5':  # Add this new option
+            monitor_today_customers(customer_list, ruangan_list)
+            input("\n\033[1;36mTekan Enter untuk melanjutkan...\033[0m")
+
+        elif choice == '6':  # Geser menu sebelumnya
             while True:
                 clear_screen()
                 print("\033[1;36m" + "="*50)
@@ -956,7 +1256,7 @@ def admin_menu():
                     print("\n\033[1;31m❌ Pilihan tidak valid!\033[0m")
                     time.sleep(1)
 
-        elif choice == '5':
+        elif choice == '7':  # Geser menu change password
             clear_screen()
             print("\033[1;36m" + "="*50)
             print(" "*18 + "🔐 CHANGE PASSWORD")

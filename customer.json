@@ -1,245 +1,73 @@
 [
     {
         "id": 1,
-        "nama": "sammy",
+        "nama": "aulia",
         "booking": [
             {
-                "ruangan_id": 2,
-                "tanggal": "2025-05-10",
-                "jam": 15
+                "ruangan_id": 1,
+                "tanggal": "2025-05-29",
+                "jam": 7,
+                "online": false
             },
             {
-                "ruangan_id": 2,
-                "tanggal": "2025-05-10",
-                "jam": 16
-            },
-            {
-                "ruangan_id": 2,
-                "tanggal": "2025-05-10",
-                "jam": 17
+                "ruangan_id": 1,
+                "tanggal": "2025-05-29",
+                "jam": 8,
+                "online": false
             }
         ]
     },
     {
         "id": 2,
-        "nama": "daan",
+        "nama": "aulia arfan",
         "booking": [
             {
-                "ruangan_id": 5,
-                "tanggal": "2025-05-10",
-                "jam": 7
+                "ruangan_id": 1,
+                "tanggal": "2025-05-29",
+                "jam": 9,
+                "online": true
             },
             {
-                "ruangan_id": 5,
-                "tanggal": "2025-05-10",
-                "jam": 8
-            },
-            {
-                "ruangan_id": 5,
-                "tanggal": "2025-05-10",
-                "jam": 9
+                "ruangan_id": 1,
+                "tanggal": "2025-05-29",
+                "jam": 10,
+                "online": true
             }
         ]
     },
     {
         "id": 3,
-        "nama": "aulia",
+        "nama": "sammy",
         "booking": [
             {
-                "ruangan_id": 2,
-                "tanggal": "2025-05-10",
-                "jam": 7
+                "ruangan_id": 1,
+                "tanggal": "2025-05-30",
+                "jam": 7,
+                "online": false
             },
             {
-                "ruangan_id": 2,
-                "tanggal": "2025-05-10",
-                "jam": 8
+                "ruangan_id": 1,
+                "tanggal": "2025-05-30",
+                "jam": 8,
+                "online": false
             }
         ]
     },
     {
         "id": 4,
-        "nama": "aulia",
-        "booking": [
-            {
-                "ruangan_id": 1,
-                "tanggal": "2025-05-11",
-                "jam": 7,
-                "online": false
-            },
-            {
-                "ruangan_id": 1,
-                "tanggal": "2025-05-11",
-                "jam": 8,
-                "online": false
-            },
-            {
-                "ruangan_id": 1,
-                "tanggal": "2025-05-11",
-                "jam": 9,
-                "online": false
-            },
-            {
-                "ruangan_id": 1,
-                "tanggal": "2025-05-11",
-                "jam": 10,
-                "online": false
-            }
-        ]
-    },
-    {
-        "id": 5,
-        "nama": "test",
-        "booking": [
-            {
-                "ruangan_id": 1,
-                "tanggal": "2025-05-18",
-                "jam": 8,
-                "online": false
-            },
-            {
-                "ruangan_id": 1,
-                "tanggal": "2025-05-18",
-                "jam": 9,
-                "online": false
-            },
-            {
-                "ruangan_id": 1,
-                "tanggal": "2025-05-18",
-                "jam": 10,
-                "online": false
-            },
-            {
-                "ruangan_id": 1,
-                "tanggal": "2025-05-18",
-                "jam": 11,
-                "online": false
-            }
-        ]
-    },
-    {
-        "id": 6,
-        "nama": "hhhh",
-        "booking": [
-            {
-                "ruangan_id": 1,
-                "tanggal": "2025-05-18",
-                "jam": 12,
-                "online": true
-            },
-            {
-                "ruangan_id": 1,
-                "tanggal": "2025-05-18",
-                "jam": 13,
-                "online": true
-            },
-            {
-                "ruangan_id": 1,
-                "tanggal": "2025-05-18",
-                "jam": 14,
-                "online": true
-            }
-        ]
-    },
-    {
-        "id": 7,
-        "nama": "salsabila",
-        "booking": [
-            {
-                "ruangan_id": 1,
-                "tanggal": "2025-05-18",
-                "jam": 15,
-                "online": false
-            },
-            {
-                "ruangan_id": 1,
-                "tanggal": "2025-05-18",
-                "jam": 16,
-                "online": false
-            },
-            {
-                "ruangan_id": 1,
-                "tanggal": "2025-05-18",
-                "jam": 17,
-                "online": false
-            },
-            {
-                "ruangan_id": 1,
-                "tanggal": "2025-05-18",
-                "jam": 18,
-                "online": false
-            }
-        ]
-    },
-    {
-        "id": 8,
         "nama": "arfan",
         "booking": [
             {
-                "ruangan_id": 1,
-                "tanggal": "2025-05-18",
+                "ruangan_id": 5,
+                "tanggal": "2025-05-30",
                 "jam": 7,
-                "online": false
-            }
-        ]
-    },
-    {
-        "id": 9,
-        "nama": "aulia",
-        "booking": [
-            {
-                "ruangan_id": 1,
-                "tanggal": "2025-05-19",
-                "jam": 7,
-                "online": false
+                "online": true
             },
             {
-                "ruangan_id": 1,
-                "tanggal": "2025-05-19",
+                "ruangan_id": 5,
+                "tanggal": "2025-05-30",
                 "jam": 8,
-                "online": false
-            }
-        ]
-    },
-    {
-        "id": 10,
-        "nama": "salsabila",
-        "booking": [
-            {
-                "ruangan_id": 1,
-                "tanggal": "2025-05-19",
-                "jam": 9,
                 "online": true
-            },
-            {
-                "ruangan_id": 1,
-                "tanggal": "2025-05-19",
-                "jam": 10,
-                "online": true
-            },
-            {
-                "ruangan_id": 1,
-                "tanggal": "2025-05-19",
-                "jam": 11,
-                "online": true
-            },
-            {
-                "ruangan_id": 1,
-                "tanggal": "2025-05-19",
-                "jam": 12,
-                "online": true
-            }
-        ]
-    },
-    {
-        "id": 11,
-        "nama": "abdul",
-        "booking": [
-            {
-                "ruangan_id": 1,
-                "tanggal": "2025-05-19",
-                "jam": 13,
-                "online": false
             }
         ]
     }

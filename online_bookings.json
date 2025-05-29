@@ -1,24 +1,24 @@
 [
     {
-        "customer_id": 6,
-        "nama": "hhhh",
-        "telepon": "0987654321",
+        "customer_id": 2,
+        "nama": "aulia arfan",
+        "telepon": "085210716592",
         "ruangan_id": 1,
-        "tanggal": "2025-05-18",
-        "jam_mulai": 12,
-        "durasi": 3,
+        "tanggal": "2025-05-29",
+        "jam_mulai": 9,
+        "durasi": 2,
         "status": "confirmed",
-        "timestamp": "2025-05-18 18:51:09"
+        "timestamp": "2025-05-29 21:54:25"
     },
     {
-        "customer_id": 10,
-        "nama": "salsabila",
-        "telepon": "085210716591",
-        "ruangan_id": 1,
-        "tanggal": "2025-05-19",
-        "jam_mulai": 9,
-        "durasi": 4,
+        "customer_id": 4,
+        "nama": "arfan",
+        "telepon": "08123456789",
+        "ruangan_id": 5,
+        "tanggal": "2025-05-30",
+        "jam_mulai": 7,
+        "durasi": 2,
         "status": "confirmed",
-        "timestamp": "2025-05-19 00:17:22"
+        "timestamp": "2025-05-30 00:24:51"
     }
 ]

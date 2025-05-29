@@ -25,6 +25,7 @@ RUANGAN_FILE = 'ruangan.json'
 CUSTOMER_FILE = 'customer.json'
 HISTORY_FILE = 'riwayat.json'
 ONLINE_FILE ='online_bookings.json'
+QUEUE_FILE = 'queue_today.json'
 
 def load_json(file_name):
     if not os.path.isfile(file_name):

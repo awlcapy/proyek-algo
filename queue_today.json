@@ -1,0 +1,20 @@
+[
+    {
+        "customer_id": 3,
+        "ruangan_id": 1,
+        "tanggal": "2025-05-30",
+        "jam_mulai": 7,
+        "durasi": 2,
+        "status": "belum_masuk",
+        "waktu_booking": "2025-05-30 00:23:35"
+    },
+    {
+        "customer_id": 4,
+        "ruangan_id": 5,
+        "tanggal": "2025-05-30",
+        "jam_mulai": 7,
+        "durasi": 2,
+        "status": "belum_masuk",
+        "waktu_booking": "2025-05-30 00:24:51"
+    }
+]
