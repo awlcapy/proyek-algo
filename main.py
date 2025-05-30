@@ -52,7 +52,7 @@ def show_banner():
     """)
     print("\033[1;35m")  # Purple color
     typewriter("═"*75)
-    typewriter(" "*20 + "🎮 CYBERNEST MANAGEMENT SYSTEM v2.0 🕹️")
+    typewriter(" "*20 + "🎮 CYBERNEST MANAGEMENT SYSTEM v1.0 🕹️")
     typewriter("═"*75)
     print("\033[0m")  # Reset color
     time.sleep(1)

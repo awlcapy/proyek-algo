@@ -19,13 +19,13 @@ def animate_text(text, delay=0.03):
 
 def draw_pixel_art():
     pixel_art = [
-        "  ╔════════════════════════╗",
-        "  ║    GAME CENTER 3000    ║",
-        "  ╚════════════════════════╝",
-        "        \\_(*-*)_/",
-        "       ┌─┐ ┌─┐ ┌─┐",
-        "       │A│ │B│ │X│",
-        "       └─┘ └─┘ └─┘"
+        "  ╔═════════════════════════╗",
+        "  ║ CYBERNEST GAMING CENTER ║",
+        "  ╚═════════════════════════╝",
+        "            \_(*-*)_/",
+        "           ┌─┐ ┌─┐ ┌─┐",
+        "           │S│ │S│ │R│",
+        "           └─┘ └─┘ └─┘"
     ]
     for line in pixel_art:
         animate_text(line, 0.01)
@@ -47,7 +47,7 @@ def fireworks():
     print("\033[5F")  # Move cursor up 5 lines
 
 def show_banner():
-    animate_text("   🎮 GAME CENTER BOOKING SYSTEM 🎮")
+    animate_text("   🎮 CYBERNEST BOOKING SYSTEM 🎮")
     print("*"*50 + "\033[0m")
 
 def validate_date(input_date):
@@ -80,7 +80,7 @@ def show_available_rooms(ruangan_list, history_list, booking_date=None):
     loading_animation(1)
     
     print("\n" + "="*80)
-    animate_text("🎮 DAFTAR RUANGAN GAME CENTER")
+    animate_text("🎮 DAFTAR RUANGAN CYBERNEST")
     print("="*80)
     print("\033[1;34mID    JENIS      KAPASITAS    KONSOLE                  STATUS\033[0m")
     print("-"*80)
@@ -393,8 +393,8 @@ def customer_menu():
             clear_screen()
             show_banner()
             print("\n" + "="*60)
-            animate_text("🎉 TERIMA KASIH TELAH BERKUNJUNG!")
-            animate_text("      SAMPAI JUMPA LAGI 👋")
+            animate_text("🎉 Thank you for playing!")
+            animate_text("      See you next round! 👋")
             print("="*60)
             
             # Game over animation

@@ -3,6 +3,7 @@ from datetime import datetime, date
 import os
 import sys
 import time
+import random
 
 def clear_screen():
     os.system('cls' if os.name == 'nt' else 'clear')
@@ -1132,6 +1133,13 @@ def search_sort_customer(customer_list):
     
     time.sleep(1.5)
 
+def animate_text(text, delay=0.01):
+    for char in text:
+        sys.stdout.write(char)
+        sys.stdout.flush()
+        time.sleep(delay)
+    print()
+
 def admin_menu():
     ruangan_list = load_json(RUANGAN_FILE)
     customer_list = load_json(CUSTOMER_FILE)
@@ -1139,9 +1147,9 @@ def admin_menu():
 
     while True:
         clear_screen()
-        print("\033[1;35m" + "="*50)
-        print(" "*18 + "🔒 ADMIN DASHBOARD")
-        print("="*50 + "\033[0m")
+        animate_text("\033[1;35m" + "="*50)
+        animate_text(" "*18 + "🔒 ADMIN DASHBOARD")
+        animate_text("="*50 + "\033[0m")
         
         print("\n\033[1;34m🛠️  MAIN MENU\033[0m")
         print("\033[1;36m1. 🏠 Kelola Ruangan Gaming")
@@ -1159,9 +1167,9 @@ def admin_menu():
         if choice == '1':
             while True:
                 clear_screen()
-                print("\033[1;36m" + "="*50)
-                print(" "*18 + "🏠 MANAGE ROOMS")
-                print("="*50 + "\033[0m")
+                animate_text("\033[1;36m" + "="*50)
+                animate_text(" "*18 + "🏠 MANAGE ROOMS")
+                animate_text("="*50 + "\033[0m")
                 
                 print("\n1. ➕ Tambah Ruangan Baru")
                 print("2. 👀 Lihat Daftar Ruangan")
@@ -1193,9 +1201,9 @@ def admin_menu():
         elif choice == '2':
             while True:
                 clear_screen()
-                print("\033[1;36m" + "="*50)
-                print(" "*18 + "👥 MANAGE CUSTOMERS")
-                print("="*50 + "\033[0m")
+                animate_text("\033[1;36m" + "="*50)
+                animate_text(" "*18 + "👥 MANAGE CUSTOMERS")
+                animate_text("="*50 + "\033[0m")
                 
                 print("\n1. ➕ Tambah Customer Baru")
                 print("2. 👀 Lihat Daftar Customer")
@@ -1226,9 +1234,9 @@ def admin_menu():
 
         elif choice == '3':
             clear_screen()
-            print("\033[1;36m" + "="*50)
-            print(" "*18 + "📋 BOOKING QUEUE")
-            print("="*50 + "\033[0m")
+            animate_text("\033[1;36m" + "="*50)
+            animate_text(" "*18 + "📋 BOOKING QUEUE")
+            animate_text("="*50 + "\033[0m")
             view_riwayat(history_list, customer_list, ruangan_list)
             input("\n\033[1;36mTekan Enter untuk melanjutkan...\033[0m")
 
@@ -1243,9 +1251,9 @@ def admin_menu():
         elif choice == '6':  # Geser menu sebelumnya
             while True:
                 clear_screen()
-                print("\033[1;36m" + "="*50)
-                print(" "*18 + "🔍 SEARCH & SORT")
-                print("="*50 + "\033[0m")
+                animate_text("\033[1;36m" + "="*50)
+                animate_text(" "*18 + "🔍 SEARCH & SORT")
+                animate_text("="*50 + "\033[0m")
                 
                 print("\n1. 🔎 Cari/Urutkan Ruangan")
                 print("2. 🔎 Cari/Urutkan Customer")
@@ -1268,14 +1276,14 @@ def admin_menu():
 
         elif choice == '7':  # Geser menu change password
             clear_screen()
-            print("\033[1;36m" + "="*50)
-            print(" "*18 + "🔐 CHANGE PASSWORD")
-            print("="*50 + "\033[0m")
+            animate_text("\033[1;36m" + "="*50)
+            animate_text(" "*18 + "🔐 CHANGE PASSWORD")
+            animate_text("="*50 + "\033[0m")
             manage_admin_account()
             input("\n\033[1;36mTekan Enter untuk melanjutkan...\033[0m")
         
         elif choice == '0':
-            print("\n\033[1;32m✔️ Logging out...\033[0m")
+            print("\n\033[1;32m✔️ Logging out... See you later!👋\033[0m")
             time.sleep(1)
             break
             
