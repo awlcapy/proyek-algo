@@ -70,5 +70,23 @@
                 "online": true
             }
         ]
+    },
+    {
+        "id": 5,
+        "nama": "salsabila",
+        "booking": [
+            {
+                "ruangan_id": 2,
+                "tanggal": "2025-05-30",
+                "jam": 7,
+                "online": false
+            },
+            {
+                "ruangan_id": 2,
+                "tanggal": "2025-05-30",
+                "jam": 8,
+                "online": false
+            }
+        ]
     }
 ]

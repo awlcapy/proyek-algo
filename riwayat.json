@@ -62,5 +62,21 @@
         "jam": 8,
         "online": true,
         "waktu_booking": "2025-05-30 00:24:51"
+    },
+    {
+        "customer_id": 5,
+        "ruangan_id": 2,
+        "tanggal": "2025-05-30",
+        "jam": 7,
+        "online": false,
+        "waktu_booking": "2025-05-30 11:15:07"
+    },
+    {
+        "customer_id": 5,
+        "ruangan_id": 2,
+        "tanggal": "2025-05-30",
+        "jam": 8,
+        "online": false,
+        "waktu_booking": "2025-05-30 11:15:07"
     }
 ]

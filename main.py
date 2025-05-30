@@ -1,6 +1,6 @@
 import time
 from auth import admin_login
-from admin import admin_menu
+from admin import admin_menu, cleanup_queue_today
 from customer import customer_menu
 import os
 import sys
@@ -80,6 +80,7 @@ def main_menu():
             time.sleep(1)
             if admin_login():
                 clear_screen()
+                cleanup_queue_today()
                 admin_menu()
         elif choice == '2':
             clear_screen()

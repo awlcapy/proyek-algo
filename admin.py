@@ -242,15 +242,18 @@ def monitor_today_customers(customer_list, ruangan_list):
         queue_today = []
     
     today = datetime.now().strftime('%Y-%m-%d')
-    today_bookings = [q for q in queue_today if q['tanggal'] == today]
+    today_bookings = [q for q in queue_today if q['tanggal'] == today]  # Fixed variable name
     
     if not today_bookings:
         print("\n\033[1;31m⚠ Tidak ada booking untuk hari ini!\033[0m\n")
         input("\n\033[1;36mTekan Enter untuk kembali...\033[0m")
         return
     
-    # Sort by time
-    today_bookings.sort(key=lambda x: x['jam_mulai'])
+    # Sort by status priority (Sedang Bermain -> Belum Masuk -> Selesai) then by time
+    today_bookings.sort(key=lambda x: (
+        {'sedang_bermain': 0, 'belum_masuk': 1, 'selesai': 2}.get(x.get('status', 'belum_masuk')),
+        x['jam_mulai']
+    ))
     
     # Print table header
     print("\n\033[1;35m{:<10} {:<25} {:<15} {:<15} {:<20} {:<10}\033[0m".format( 
@@ -258,12 +261,9 @@ def monitor_today_customers(customer_list, ruangan_list):
     print("\033[1;34m" + "─"*90 + "\033[0m")
     
     for booking in today_bookings:
-        # Get customer id
-        id = next((i for i in customer_list if i['id'] == booking['customer_id']), None)
-        customer_id = id['id'] if id else "Unknown"
-
-        # Get customer name
+        # Get customer info
         customer = next((c for c in customer_list if c['id'] == booking['customer_id']), None)
+        customer_id = customer['id'] if customer else "Unknown"
         customer_name = customer['nama'] if customer else "Unknown"
         
         # Get room info
@@ -271,7 +271,7 @@ def monitor_today_customers(customer_list, ruangan_list):
         room_name = f"{room['jenis']} {room['id']}" if room else "Unknown"
         
         # Format time
-        time_range = f"{booking['jam_mulai']:02d}:00-{booking['jam_mulai']+booking['durasi']:02d}:00"
+        time_range = f"{booking['jam_mulai']:02d}:00-{(booking['jam_mulai']+booking['durasi']):02d}:00"
         
         # Status display
         status = booking.get('status', 'belum_masuk')
@@ -281,11 +281,11 @@ def monitor_today_customers(customer_list, ruangan_list):
         elif status == 'sedang_bermain':
             status_display = "\033[1;32m🟢 Sedang Bermain\033[0m"
             action = "[Selesai]"
-        else:  # selesai
+        else:
             status_display = "\033[1;31m🔴 Selesai\033[0m"
             action = "-"
         
-        # Highlight row if currently playing
+        # Highlight active bookings
         row_prefix = "\033[1;42m" if status == 'sedang_bermain' else ""
         row_suffix = "\033[0m" if status == 'sedang_bermain' else ""
         
@@ -293,14 +293,13 @@ def monitor_today_customers(customer_list, ruangan_list):
     
     print("\033[1;34m" + "─"*90 + "\033[0m")
     
-    # Action selection
+    # Action menu
     print("\n\033[1;34mPilih Aksi:\033[0m")
     print("\033[1;32m1. Update Status Customer")
     print("\033[1;33m0. Kembali ke Menu Utama\033[0m")
     
     while True:
         choice = input("\n\033[1;34m⌨ Pilihan Anda (0-1): \033[0m")
-        
         if choice == '1':
             update_booking_status(queue_today, customer_list)
             break
@@ -308,7 +307,7 @@ def monitor_today_customers(customer_list, ruangan_list):
             break
         else:
             print("\033[1;31m❌ Pilihan tidak valid!\033[0m")
-
+            
 def update_booking_status(queue_today, customer_list):
     """Update booking status (belum_masuk -> sedang_bermain -> selesai)"""
     try:
@@ -353,6 +352,17 @@ def update_booking_status(queue_today, customer_list):
     
     time.sleep(1)
 
+def cleanup_queue_today():
+    """Bersihkan hanya booking dari hari sebelumnya (jika ada)"""
+    today = datetime.now().strftime('%Y-%m-%d')
+    try:
+        queue = load_json(QUEUE_FILE)
+        # Hanya hapus data yang BUKAN hari ini (expired)
+        updated = [q for q in queue if q['tanggal'] == today]
+        if len(updated) != len(queue):
+            save_json(QUEUE_FILE, updated)
+    except FileNotFoundError:
+        pass
 
 def add_customer(customer_list, ruangan_list, history_list):
     clear_screen()

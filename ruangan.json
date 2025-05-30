@@ -39,5 +39,14 @@
             "Nintendo Switch",
             "PS5"
         ]
+    },
+    {
+        "id": 6,
+        "jenis": "VVIP",
+        "kapasitas": 6,
+        "console": [
+            "Nintendo Switch",
+            "PS5"
+        ]
     }
 ]
