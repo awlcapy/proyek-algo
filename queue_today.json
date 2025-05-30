@@ -14,7 +14,7 @@
         "tanggal": "2025-05-30",
         "jam_mulai": 7,
         "durasi": 2,
-        "status": "sedang_bermain",
+        "status": "selesai",
         "waktu_booking": "2025-05-30 00:24:51"
     },
     {
@@ -23,7 +23,7 @@
         "tanggal": "2025-05-30",
         "jam_mulai": 7,
         "durasi": 2,
-        "status": "belum_masuk",
+        "status": "sedang_bermain",
         "waktu_booking": "2025-05-30 11:15:07"
     }
 ]

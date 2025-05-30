@@ -871,11 +871,16 @@ def delete_customer(customer_list, history_list, ruangan_list=None):
     print(" "*18 + "🗑️ HAPUS CUSTOMER")
     print("═"*50 + "\033[0m")
     
-    # Load room data if not provided
+    # Load all necessary data
     if ruangan_list is None:
         ruangan_list = load_json(RUANGAN_FILE)
     
-    # Show customer list with loading animation
+    try:
+        queue_today = load_json(QUEUE_FILE)
+    except FileNotFoundError:
+        queue_today = []
+    
+    # Show customer list
     print("\n\033[1;33mMemuat data customer...\033[0m")
     time.sleep(0.5)
     view_customer(customer_list, ruangan_list)
@@ -925,15 +930,19 @@ def delete_customer(customer_list, history_list, ruangan_list=None):
     
     # Perform deletion
     try:
-        # Remove from queue
-        history_list[:] = [q for q in history_list if q['customer_id'] != cust_id]
-        
-        # Remove customer
+        # 1. Remove from customer list
         customer_list.remove(cust)
         
-        # Save changes
+        # 2. Remove from history
+        history_list[:] = [h for h in history_list if h.get('customer_id') != cust_id]
+        
+        # 3. Remove from queue (both today and future bookings)
+        queue_today[:] = [q for q in queue_today if q.get('customer_id') != cust_id]
+        
+        # 4. Save all changes
         save_json(CUSTOMER_FILE, customer_list)
         save_json(HISTORY_FILE, history_list)
+        save_json(QUEUE_FILE, queue_today)
         
         print("\n\033[1;32m✓ Customer berhasil dihapus!\033[0m")
         print(f"\033[1;36mID {cust_id} - {cust['nama']} telah dihapus dari sistem\033[0m")

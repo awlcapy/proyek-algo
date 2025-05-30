@@ -20,5 +20,16 @@
         "durasi": 2,
         "status": "confirmed",
         "timestamp": "2025-05-30 00:24:51"
+    },
+    {
+        "customer_id": 6,
+        "nama": "daan",
+        "telepon": "081234567890",
+        "ruangan_id": 1,
+        "tanggal": "2025-05-30",
+        "jam_mulai": 9,
+        "durasi": 3,
+        "status": "not confirmed",
+        "timestamp": "2025-05-30 19:17:55"
     }
 ]
