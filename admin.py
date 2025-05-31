@@ -3,11 +3,12 @@ from datetime import datetime, date
 import os
 import sys
 import time
-import random
 
+# bagian UI/UX untuk clear screen
 def clear_screen():
     os.system('cls' if os.name == 'nt' else 'clear')
 
+# untuk delay text supaya terkesan seperti animasi
 def typewriter(text, delay=0.001):
     for char in text:
         sys.stdout.write(char)
@@ -15,16 +16,19 @@ def typewriter(text, delay=0.001):
         time.sleep(delay)
     print()
 
+# import fungsi dari auth.py untuk mengubah password admin
 def manage_admin_account():
     from auth import change_admin_password
     change_admin_password()
 
+# validasi data input (tahun, bulan, dan hari)
 def validate_date(input_date):
     try:
         return datetime.strptime(input_date, "%Y-%m-%d").date()
     except ValueError:
         return None
 
+# fungsi untuk mengecek ketersediaan jam (apabila jam di ruangan & tanggal itu sudah di booking, maka tidak akan muncul dalam pilihan)
 def get_available_hours(history_list, ruangan_id, tanggal):
     booked_hours = [q['jam'] for q in history_list 
                    if q['ruangan_id'] == ruangan_id and q['tanggal'] == tanggal]
@@ -34,7 +38,9 @@ def format_time_range(start_hour, duration):
     end_hour = start_hour + duration
     return f"{start_hour:02d}:00-{end_hour:02d}:00"
 
-# --- RUANGAN OPERATIONS ---
+# --- OPRASI UNTUK RUANGAN ---
+
+# fungsi untuk menambah ruangan
 def add_ruangan(ruangan_list):
     clear_screen()
     print("\033[1;36m" + "═"*50)
@@ -46,19 +52,19 @@ def add_ruangan(ruangan_list):
     print("\033[1;33m2. 💎 VIP Room (Kapasitas: 3)\033[0m")
     print("\033[1;35m3. ✨ VVIP Room (Kapasitas: 6)\033[0m")
     
-    jenis_options = {1: 'Regular', 2: 'VIP', 3: 'VVIP'}
+    jenis_options = {1: 'Regular', 2: 'VIP', 3: 'VVIP'} #memilih jenis ruangan
     while True:
         try:
-            jenis_choice = int(input("\n\033[1;34m⌨ Pilih jenis ruangan (1-3): \033[0m"))
+            jenis_choice = int(input("\n\033[1;34m⌨ Pilih jenis ruangan (1-3): \033[0m")) #user input jenis ruangan (1-3)
             if jenis_choice in jenis_options:
                 jenis = jenis_options[jenis_choice]
                 break
             else:
-                print("\033[1;31m❌ Pilihan tidak valid! Harap pilih 1-3.\033[0m")
+                print("\033[1;31m❌ Pilihan tidak valid! Harap pilih 1-3.\033[0m") # apabila input tidak valid
         except ValueError:
-            print("\033[1;31m❌ Input harus berupa angka!\033[0m")
+            print("\033[1;31m❌ Input harus berupa angka!\033[0m") # apabila input tidak berupa angka
 
-    # Set default values based on room type
+    # pilihan ruangan sesuai input, beserta pilihan jenis consolenya
     if jenis == 'Regular':
         kapasitas = 2
         console_options = ['PS4', 'PS5']
@@ -71,11 +77,11 @@ def add_ruangan(ruangan_list):
 
     print("\n\033[1;34m🕹️ Console yang tersedia:\033[0m")
     for i, c in enumerate(console_options, 1):
-        print(f"\033[1;33m{i}. {c}\033[0m")
+        print(f"\033[1;33m{i}. {c}\033[0m") # menampilkan console yang tersedia
     
     chosen_console = []
     while True:
-        choices = input("\n\033[1;34m🎮 Pilih console (pisahkan dengan koma jika lebih dari satu): \033[0m")
+        choices = input("\n\033[1;34m🎮 Pilih console (pisahkan dengan koma jika lebih dari satu): \033[0m") # user input console sesuai yang ditampilkan
         try:
             nums = [int(x.strip()) for x in choices.split(',') if x.strip()]
             valid = all(1 <= n <= len(console_options) for n in nums)
@@ -87,6 +93,7 @@ def add_ruangan(ruangan_list):
         except ValueError:
             print("\033[1;31m❌ Input harus berupa angka! Pisahkan dengan koma jika memilih lebih dari satu.\033[0m")
 
+    # SIMPAN DATA RUANGAN
     ruangan_id = next_id(ruangan_list)
     new_room = {
         'id': ruangan_id,
@@ -95,8 +102,9 @@ def add_ruangan(ruangan_list):
         'console': chosen_console
     }
     ruangan_list.append(new_room)
-    save_json(RUANGAN_FILE, ruangan_list)
+    save_json(RUANGAN_FILE, ruangan_list) # simpan data di ruangan.json
     
+    # ruangan berhasil ditambah
     print("\n\033[1;32m✓ Ruangan berhasil ditambahkan!\033[0m")
     print(f"\033[1;36mID Ruangan: {ruangan_id}")
     print(f"Jenis: {jenis}")
@@ -104,6 +112,7 @@ def add_ruangan(ruangan_list):
     print(f"Console: {', '.join(chosen_console)}\033[0m\n")
     time.sleep(1.5)
 
+# fungsi lihat ruangan
 def view_ruangan(ruangan_list):
     clear_screen()
     print("\033[1;36m" + "═"*50)
@@ -115,6 +124,7 @@ def view_ruangan(ruangan_list):
         time.sleep(1)
         return
     
+    # menampilkan ruangan yang tersedia
     print("\n\033[1;35m{:<5} {:<10} {:<12} {:<25}\033[0m".format(
         "ID", "Jenis", "Kapasitas", "Console"))
     print("\033[1;34m" + "-"*52 + "\033[0m")
@@ -127,21 +137,22 @@ def view_ruangan(ruangan_list):
     print("\033[1;34m" + "-"*52 + "\033[0m\n")
     time.sleep(1)
 
+#fungsi edit data ruangan
 def edit_ruangan(ruangan_list):
-    view_ruangan(ruangan_list)
+    view_ruangan(ruangan_list) #menampilkan ruangan yang tersedia di database
     if not ruangan_list:
         return
     
     try:
-        ruangan_id = int(input("\n\033[1;34m⌨ Masukkan ID ruangan yang ingin diedit: \033[0m"))
+        ruangan_id = int(input("\n\033[1;34m⌨ Masukkan ID ruangan yang ingin diedit: \033[0m")) # input id ruangan
     except ValueError:
         print("\033[1;31m❌ Input harus berupa angka!\033[0m")
         time.sleep(1)
         return
     
-    room = next((r for r in ruangan_list if r['id'] == ruangan_id), None)
+    room = next((r for r in ruangan_list if r['id'] == ruangan_id), None) # mencari id ruangan
     if not room:
-        print("\033[1;31m❌ Ruangan tidak ditemukan!\033[0m")
+        print("\033[1;31m❌ Ruangan tidak ditemukan!\033[0m") # apabila id ruangan tidak ditemukan
         time.sleep(1)
         return
     
@@ -149,7 +160,7 @@ def edit_ruangan(ruangan_list):
     print("\033[1;35m" + "-"*50 + "\033[0m")
     
     jenis_options = ['Regular', 'VIP', 'VVIP']
-    jenis_input = input(f"\033[1;34mJenis ruangan ({room['jenis']}) [kosongkan jika tidak berubah]: \033[0m").strip()
+    jenis_input = input(f"\033[1;34mJenis ruangan ({room['jenis']}) [kosongkan jika tidak berubah]: \033[0m").strip() # user bisa mengedit jenis ruangan
     if jenis_input:
         if jenis_input in jenis_options:
             room['jenis'] = jenis_input
@@ -157,7 +168,7 @@ def edit_ruangan(ruangan_list):
         else:
             print("\033[1;31m❌ Jenis ruangan tidak valid! (Regular/VIP/VVIP)\033[0m")
 
-    kapasitas_input = input(f"\033[1;34mKapasitas ({room['kapasitas']}) [kosongkan jika tidak berubah]: \033[0m").strip()
+    kapasitas_input = input(f"\033[1;34mKapasitas ({room['kapasitas']}) [kosongkan jika tidak berubah]: \033[0m").strip() # user bisa mengedit kapasitas ruangan
     if kapasitas_input:
         try:
             k = int(kapasitas_input)
@@ -169,7 +180,7 @@ def edit_ruangan(ruangan_list):
         except ValueError:
             print("\033[1;31m❌ Input harus berupa angka!\033[0m")
 
-    console_input = input(f"\033[1;34mConsole ({', '.join(room['console'])}) [pisahkan dengan koma, kosongkan jika tidak berubah]: \033[0m").strip()
+    console_input = input(f"\033[1;34mConsole ({', '.join(room['console'])}) [pisahkan dengan koma, kosongkan jika tidak berubah]: \033[0m").strip() # user bisa mengedit console yang tersedia
     if console_input:
         consoles = [c.strip() for c in console_input.split(',') if c.strip()]
         if consoles:
@@ -178,58 +189,59 @@ def edit_ruangan(ruangan_list):
         else:
             print("\033[1;31m❌ Daftar console tidak boleh kosong!\033[0m")
     
-    save_json(RUANGAN_FILE, ruangan_list)
-    print("\n\033[1;32m✓ Data ruangan berhasil diperbarui!\033[0m")
+    save_json(RUANGAN_FILE, ruangan_list) # menyimpan data ruangan yang telah diedit ke file ruangan.json
+    print("\n\033[1;32m✓ Data ruangan berhasil diperbarui!\033[0m") # data berhasil di perbaharui
     time.sleep(1.5)
 
+# fungsi untuk menghapus ruangan
 def delete_ruangan(ruangan_list, history_list, customer_list):
-    view_ruangan(ruangan_list)
+    view_ruangan(ruangan_list) #menampilkan ruangan yang tersedia di database
     if not ruangan_list:
         return
     
     try:
-        ruangan_id = int(input("\n\033[1;34m⌨ Masukkan ID ruangan yang ingin dihapus: \033[0m"))
+        ruangan_id = int(input("\n\033[1;34m⌨ Masukkan ID ruangan yang ingin dihapus: \033[0m")) #input id ruangan yang diingin dihapus
     except ValueError:
         print("\033[1;31m❌ Input harus berupa angka!\033[0m")
         time.sleep(1)
         return
     
-    room = next((r for r in ruangan_list if r['id'] == ruangan_id), None)
+    room = next((r for r in ruangan_list if r['id'] == ruangan_id), None) #mencari id ruangan yang diinpu
     if not room:
         print("\033[1;31m❌ Ruangan tidak ditemukan!\033[0m")
         time.sleep(1)
         return
     
-    booked = any(q['ruangan_id'] == ruangan_id for q in history_list)
+    booked = any(q['ruangan_id'] == ruangan_id for q in history_list) #cek apakah terdapat booking aktif
     if booked:
-        print("\033[1;31m❌ Ruangan ini memiliki booking aktif dan tidak dapat dihapus!\033[0m")
+        print("\033[1;31m❌ Ruangan ini memiliki booking aktif dan tidak dapat dihapus!\033[0m") #jika iya, maka ruangan tidak dapat dihapus
         time.sleep(1.5)
         return
     
-    # Confirmation
+    # konfirmasi penghapusan
     print(f"\n\033[1;31m⚠ ANDA AKAN MENGHAPUS:\033[0m")
     print(f"\033[1;33mID: {room['id']}")
     print(f"Jenis: {room['jenis']}")
     print(f"Kapasitas: {room['kapasitas']} orang")
     print(f"Console: {', '.join(room['console'])}\033[0m")
     
-    confirm = input("\n\033[1;31mApakah Anda yakin? (y/n): \033[0m").lower()
+    confirm = input("\n\033[1;31mApakah Anda yakin? (y/n): \033[0m").lower() #konfimrasi (yes/no)
     if confirm != 'y':
-        print("\033[1;33m🛑 Penghapusan dibatalkan\033[0m")
+        print("\033[1;33m🛑 Penghapusan dibatalkan\033[0m") #apabila input selain y, penghapusan dibatalkan
         time.sleep(1)
         return
     
-    # Update customer bookings
     for cust in customer_list:
         cust['booking'] = [b for b in cust.get('booking', []) if b['ruangan_id'] != ruangan_id]
     
-    ruangan_list.remove(room)
+    ruangan_list.remove(room) #hapus ruangan 
     save_json(RUANGAN_FILE, ruangan_list)
-    save_json(CUSTOMER_FILE, customer_list)
+    save_json(CUSTOMER_FILE, customer_list) #simpan data terbaru (setelah dihapus)
     
     print("\n\033[1;32m✓ Ruangan berhasil dihapus!\033[0m")
     time.sleep(1.5)
 
+#fungsi monitor customer hari ini
 def monitor_today_customers(customer_list, ruangan_list):
     """Monitor today's customers with status management"""
     clear_screen()
@@ -237,13 +249,14 @@ def monitor_today_customers(customer_list, ruangan_list):
     print(" "*25 + "👥 MONITOR CUSTOMER HARI INI")
     print("═"*80 + "\033[0m")
     
+    #ambil file queue
     try:
         queue_today = load_json(QUEUE_FILE)
     except FileNotFoundError:
         queue_today = []
     
-    today = datetime.now().strftime('%Y-%m-%d')
-    today_bookings = [q for q in queue_today if q['tanggal'] == today]  # Fixed variable name
+    today = datetime.now().strftime('%Y-%m-%d') #definisikan hari ini
+    today_bookings = [q for q in queue_today if q['tanggal'] == today]  #definisikan booking hari ini
     
     if not today_bookings:
         print("\n\033[1;31m⚠ Tidak ada booking untuk hari ini!\033[0m\n")
@@ -262,16 +275,16 @@ def monitor_today_customers(customer_list, ruangan_list):
     print("\033[1;34m" + "─"*90 + "\033[0m")
     
     for booking in today_bookings:
-        # Get customer info
+        #dapatkan info customer
         customer = next((c for c in customer_list if c['id'] == booking['customer_id']), None)
         customer_id = customer['id'] if customer else "Unknown"
         customer_name = customer['nama'] if customer else "Unknown"
         
-        # Get room info
+        #dapatkan info ruangan
         room = next((r for r in ruangan_list if r['id'] == booking['ruangan_id']), None)
         room_name = f"{room['jenis']} {room['id']}" if room else "Unknown"
         
-        # Format time
+        # Format waktu
         time_range = f"{booking['jam_mulai']:02d}:00-{(booking['jam_mulai']+booking['durasi']):02d}:00"
         
         # Status display
@@ -286,7 +299,7 @@ def monitor_today_customers(customer_list, ruangan_list):
             status_display = "\033[1;31m🔴 Selesai\033[0m"
             action = "-"
         
-        # Highlight active bookings
+        # Highlight status "sedang bermain"
         row_prefix = "\033[1;42m" if status == 'sedang_bermain' else ""
         row_suffix = "\033[0m" if status == 'sedang_bermain' else ""
         
@@ -299,6 +312,7 @@ def monitor_today_customers(customer_list, ruangan_list):
     print("\033[1;32m1. Update Status Customer")
     print("\033[1;33m0. Kembali ke Menu Utama\033[0m")
     
+    #update status customer
     while True:
         choice = input("\n\033[1;34m⌨ Pilihan Anda (0-1): \033[0m")
         if choice == '1':
@@ -308,17 +322,18 @@ def monitor_today_customers(customer_list, ruangan_list):
             break
         else:
             print("\033[1;31m❌ Pilihan tidak valid!\033[0m")
-            
+
+#fungsi update status customer       
 def update_booking_status(queue_today, customer_list):
     """Update booking status (belum_masuk -> sedang_bermain -> selesai)"""
     try:
-        customer_id = int(input("\n\033[1;34m⌨ Masukkan ID Customer yang akan diupdate: \033[0m"))
+        customer_id = int(input("\n\033[1;34m⌨ Masukkan ID Customer yang akan diupdate: \033[0m")) #input id customer hari ini yang ingin diupdate
     except ValueError:
         print("\033[1;31m❌ ID harus berupa angka!\033[0m")
         time.sleep(1)
         return
     
-    booking = next((q for q in queue_today if q['customer_id'] == customer_id), None)
+    booking = next((q for q in queue_today if q['customer_id'] == customer_id), None) #ambil data id customer yg dicari
     if not booking:
         print("\033[1;31m❌ Booking tidak ditemukan!\033[0m")
         time.sleep(1)
@@ -332,17 +347,19 @@ def update_booking_status(queue_today, customer_list):
     
     current_status = booking.get('status', 'belum_masuk')
     
+    #update status dan aksi
     if current_status == 'belum_masuk':
         new_status = 'sedang_bermain'
         action = "masuk ruangan"
     elif current_status == 'sedang_bermain':
         new_status = 'selesai'
         action = "selesai bermain"
-    else:
-        print("\033[1;31m❌ Status sudah selesai, tidak bisa diubah!\033[0m")
+    else: #SELESAI
+        print("\033[1;31m❌ Status sudah selesai, tidak bisa diubah!\033[0m") #jika statusnya selesai, maka status tidak bisa diubah
         time.sleep(1)
         return
     
+    #konfirmasi update status
     confirm = input(f"\n\033[1;34mKonfirmasi {action} untuk {customer['nama']}? (y/n): \033[0m").lower()
     if confirm == 'y':
         booking['status'] = new_status
@@ -353,6 +370,7 @@ def update_booking_status(queue_today, customer_list):
     
     time.sleep(1)
 
+#menghapus queue status customer hari ini
 def cleanup_queue_today():
     """Bersihkan hanya booking dari hari sebelumnya (jika ada)"""
     today = datetime.now().strftime('%Y-%m-%d')
@@ -365,9 +383,10 @@ def cleanup_queue_today():
     except FileNotFoundError:
         pass
 
+#fungsi menambah customer
 def add_customer(customer_list, ruangan_list, history_list):
     clear_screen()
-    # Header with better visual alignment
+    # Header 
     print("\033[1;36m" + "═"*60)
     print(" "*20 + "🌟 TAMBAH CUSTOMER BARU")
     print("═"*60 + "\033[0m")
@@ -376,14 +395,14 @@ def add_customer(customer_list, ruangan_list, history_list):
     print("\n\033[1;34m📝 DATA CUSTOMER\033[0m")
     print("\033[1;35m" + "─"*60 + "\033[0m")
 
-    # Name input with duplicate check
+    #input nama dengan mengecek duplikat nama
     while True:
         nama = input("\033[1;34m⌨ Nama Customer: \033[0m").strip()
         if not nama:
             print("\033[1;31m❌ Nama tidak boleh kosong!\033[0m")
             continue
             
-        # Check for duplicates with better formatting
+        # cek apakah input nama duplikat
         duplicates = [c for c in customer_list if c['nama'].lower() == nama.lower()]
         if duplicates:
             print("\n\033[1;33m⚠️ Peringatan: Nama sudah terdaftar!\033[0m")
@@ -392,8 +411,8 @@ def add_customer(customer_list, ruangan_list, history_list):
                 booking_count = len(dup.get('booking', []))
                 print(f"\033[1;36mID: {dup['id']}\033[0m | Booking: \033[1;33m{booking_count}x\033[0m")
             print("\033[1;35m" + "─"*40 + "\033[0m")
-            
-            confirm = input("\n\033[1;34mTetap buat customer baru? (y/t): \033[0m").lower()
+            #jika nama tersebut adalah orang yang sama, data akan ditambhakan ke id lama, sedangkan jika berbeda orang, akan dibuat id baru
+            confirm = input("\n\033[1;34mTetap buat customer baru? (y/t): \033[0m").lower() 
             if confirm != 'y':
                 print("\033[1;33m✖ Proses dibatalkan\033[0m")
                 time.sleep(1)
@@ -404,7 +423,7 @@ def add_customer(customer_list, ruangan_list, history_list):
     print("\n\033[1;34m📅 DETAIL BOOKING\033[0m")
     print("\033[1;35m" + "─"*60 + "\033[0m")
 
-    # Date input with validation
+    # input data dengan validasi
     while True:
         input_date = input("\033[1;34m⌨ Tanggal booking (YYYY-MM-DD): \033[0m").strip()
         booking_date = validate_date(input_date)
@@ -416,12 +435,12 @@ def add_customer(customer_list, ruangan_list, history_list):
             continue
         break
 
-    # Room selection with better display
+    # menampilkan ruangan
     print("\n\033[1;34m🏠 PILIH RUANGAN\033[0m")
     view_ruangan(ruangan_list)
     
     try:
-        ruangan_id = int(input("\n\033[1;34m⌨ Masukkan ID ruangan: \033[0m"))
+        ruangan_id = int(input("\n\033[1;34m⌨ Masukkan ID ruangan: \033[0m")) #input id ruangan
     except ValueError:
         print("\033[1;31m❌ Harap masukkan angka ID ruangan!\033[0m")
         time.sleep(1.5)
@@ -433,7 +452,7 @@ def add_customer(customer_list, ruangan_list, history_list):
         time.sleep(1.5)
         return None
 
-    # Display selected room info with better formatting
+    # tampilan ruangan yang dipilih
     print("\n\033[1;32m✓ RUANGAN DIPILIH:\033[0m")
     print("\033[1;36m" + "─"*40 + "\033[0m")
     print(f"\033[1;33mTipe     : {selected_room['jenis']}")
@@ -442,21 +461,21 @@ def add_customer(customer_list, ruangan_list, history_list):
     print(f"Console  : {', '.join(selected_room['console'])}\033[0m")
     print("\033[1;36m" + "─"*40 + "\033[0m")
 
-    # Available hours with better display
+    # menampilkan jam yang tersedia
     available_hours = get_available_hours(history_list, ruangan_id, str(booking_date))
     if not available_hours:
         print(f"\n\033[1;31m❌ Ruangan penuh pada {booking_date}!\033[0m")
         time.sleep(1.5)
         return None
 
+    # menampilkan jam yang tersedia
     print(f"\n\033[1;34m⏰ JAM TERSEDIA ({booking_date})\033[0m")
     print("\033[1;35m" + "─"*50 + "\033[0m")
     for i, hour in enumerate(available_hours, 1):
         print(f"\033[1;33m{i:>2}. {hour:02d}:00 - {hour+1:02d}:00\033[0m")
     print("\033[1;35m" + "─"*50 + "\033[0m")
 
-    # Time selection with validation
-    # Time selection: choose start hour and duration
+    #pilih jam 
     while True:
         try:
             choice = int(input("\n\033[1;34m⌨ Pilih jam mulai (nomor): \033[0m"))
@@ -468,6 +487,7 @@ def add_customer(customer_list, ruangan_list, history_list):
         except ValueError:
             print("\033[1;31m❌ Input tidak valid!\033[0m")
 
+    #pilih durasi
     while True:
         try:
             durasi = int(input("\033[1;34m⌨ Mau booking berapa jam?: \033[0m"))
@@ -486,7 +506,7 @@ def add_customer(customer_list, ruangan_list, history_list):
             print("\033[1;31m❌ Input tidak valid!\033[0m")
 
 
-    # Validate duration and time slots
+    # validasi jam dan durasi apakah sudah dibooking atau melebihi batas
     selected_hours = range(jam_mulai, jam_mulai + durasi)
     for hour in selected_hours:
         if hour > 22:
@@ -508,6 +528,7 @@ def add_customer(customer_list, ruangan_list, history_list):
     print(f"{'Durasi':<10}: {durasi} jam\033[0m")
     print("\033[1;36m" + "═"*60 + "\033[0m")
 
+    #konfirmasi
     confirm = input("\n\033[1;34mKonfirmasi booking? (y/n): \033[0m").lower()
     if confirm != 'y':
         print("\033[1;33m⚠️ Booking dibatalkan\033[0m")
@@ -552,9 +573,9 @@ def add_customer(customer_list, ruangan_list, history_list):
 
 
     save_json(CUSTOMER_FILE, customer_list)
-    save_json(HISTORY_FILE, history_list)
+    save_json(HISTORY_FILE, history_list) #simpan data di file json
 
-    # Success message with better formatting
+    # menampilkan ringkasan booking
     print("\n\033[1;32m" + "═"*60)
     print(" "*20 + "✅ BOOKING BERHASIL!")
     print("═"*60 + "\033[0m")
@@ -568,15 +589,8 @@ def add_customer(customer_list, ruangan_list, history_list):
     time.sleep(3)
     return cust_id
 
+#fungsi lihat customer
 def view_customer(customer_list, ruangan_list):
-    """
-    Menampilkan daftar customer yang memiliki booking hari ini
-    dengan format tabel yang rapi dan informatif.
-    
-    Args:
-        customer_list (list): Daftar customer
-        ruangan_list (list): Daftar ruangan
-    """
     # Dapatkan tanggal hari ini
     today = datetime.now().strftime('%Y-%m-%d')
     
@@ -756,10 +770,10 @@ def view_online_bookings(ruangan_list):
     
     time.sleep(1)
 
+#fungsi konfirmasi booking online
 def confirm_booking(online_bookings, ruangan_list):
-    """Konfirmasi booking online"""
     try:
-        booking_id = int(input("\n\033[1;34m⌨ Masukkan ID Customer yang akan dikonfirmasi: \033[0m"))
+        booking_id = int(input("\n\033[1;34m⌨ Masukkan ID Customer yang akan dikonfirmasi: \033[0m")) #input id customer yang ingin di konfirmasi
     except ValueError:
         print("\033[1;31m❌ ID harus berupa angka!\033[0m")
         return
@@ -779,61 +793,64 @@ def confirm_booking(online_bookings, ruangan_list):
     print(f"Waktu   : {booking['jam_mulai']:02d}:00-{booking['jam_mulai']+booking['durasi']:02d}:00")
     print(f"Durasi  : {booking['durasi']} jam\033[0m")
     
+    #konfirmasi booking
     confirm = input("\n\033[1;34mKonfirmasi booking ini? (y/n): \033[0m").lower()
     if confirm == 'y':
         booking['status'] = "confirmed"
-        save_json(ONLINE_FILE, online_bookings)
+        save_json(ONLINE_FILE, online_bookings) #simpan ke file json
         print("\033[1;32m✓ Booking berhasil dikonfirmasi!\033[0m")
     else:
         print("\033[1;33m✖ Konfirmasi dibatalkan\033[0m")
 
+#fungsi batalkan booking online
 def cancel_booking(online_bookings):
-    """Batalkan booking online"""
     try:
         booking_id = int(input("\n\033[1;34m⌨ Masukkan ID Customer yang akan dibatalkan: \033[0m"))
     except ValueError:
         print("\033[1;31m❌ ID harus berupa angka!\033[0m")
         return
     
-    booking = next((b for b in online_bookings if b['customer_id'] == booking_id), None)
+    booking = next((b for b in online_bookings if b['customer_id'] == booking_id), None) #dapatkan data id customer yang dipilih
     if not booking:
-        print("\033[1;31m❌ Booking tidak ditemukan!\033[0m")
+        print("\033[1;31m❌ Booking tidak ditemukan!\033[0m") #apabila data tidak ada
         return
     
+    #konfirmasi
     confirm = input("\n\033[1;31mYakin ingin membatalkan booking ini? (y/n): \033[0m").lower()
     if confirm == 'y':
         online_bookings.remove(booking)
-        save_json(ONLINE_FILE, online_bookings)
+        save_json(ONLINE_FILE, online_bookings) #simpan data terbaru ke json
         print("\033[1;32m✓ Booking berhasil dibatalkan!\033[0m")
     else:
         print("\033[1;33m✖ Pembatalan dibatalkan\033[0m")
 
+#fungsi mencari ruangan berdasarkan id
 def find_room(ruangan_list, room_id):
-    """Mencari data ruangan berdasarkan ID"""
     return next((r for r in ruangan_list if r['id'] == room_id), {})
 
+#Memformat jam booking ke format waktu
 def format_time(hour):
-    """Memformat jam booking ke format waktu"""
     return f"{hour:02d}:00-{hour+1:02d}:00"
 
-
+#fungsi edit customer
 def edit_customer(customer_list, ruangan_list):
-    """Edit customer data with enhanced UI/UX"""
     clear_screen()
     print("\033[1;36m" + "="*50)
     print(" "*18 + "✏️ EDIT CUSTOMER")
     print("="*50 + "\033[0m")
     
-    # Tampilkan daftar customer dengan animasi
+    # Tampilkan daftar customer
     print("\n\033[1;35mLoading customer data...\033[0m")
     time.sleep(0.5)
     view_customer(customer_list, ruangan_list)
     
+    #jika tidak ada customer
     if not customer_list:
         print("\n\033[1;31m⚠️ Tidak ada data customer yang tersedia!\033[0m")
         time.sleep(1.5)
         return
     
+    #input
     try:
         print("\n\033[1;33m" + "─"*50 + "\033[0m")
         cust_id = int(input("\033[1;34m⌨ Masukkan ID customer yang ingin diedit: \033[0m"))
@@ -842,9 +859,9 @@ def edit_customer(customer_list, ruangan_list):
         time.sleep(1.5)
         return
     
-    cust = next((c for c in customer_list if c['id'] == cust_id), None)
+    cust = next((c for c in customer_list if c['id'] == cust_id), None) #dapatkan data customer
     if not cust:
-        print("\n\033[1;31m❌ Customer dengan ID tersebut tidak ditemukan!\033[0m")
+        print("\n\033[1;31m❌ Customer dengan ID tersebut tidak ditemukan!\033[0m") #jika tidak ada
         time.sleep(1.5)
         return
     
@@ -852,11 +869,12 @@ def edit_customer(customer_list, ruangan_list):
     print(f"\033[1;33mNama saat ini: {cust['nama']}\033[0m")
     print("\033[1;35m" + "─"*50 + "\033[0m")
     
+    #update nama customer
     new_name = input("\033[1;34m✨ Masukkan nama baru (kosongkan untuk batal): \033[0m").strip()
     
     if new_name:
         cust['nama'] = new_name
-        save_json(CUSTOMER_FILE, customer_list)
+        save_json(CUSTOMER_FILE, customer_list) #simpan data ke json
         print("\n\033[1;32m✓ Data customer berhasil diperbarui!\033[0m")
         print(f"\033[1;36mID: {cust['id']} | Nama baru: {cust['nama']}\033[0m")
     else:
@@ -864,23 +882,24 @@ def edit_customer(customer_list, ruangan_list):
     
     time.sleep(1.5)
 
+#fungsi customer
 def delete_customer(customer_list, history_list, ruangan_list=None):
-    """Delete a customer with enhanced UI/UX and proper validation"""
     clear_screen()
     print("\033[1;36m" + "═"*50)
     print(" "*18 + "🗑️ HAPUS CUSTOMER")
     print("═"*50 + "\033[0m")
     
-    # Load all necessary data
+    # dapatkan data ruangan
     if ruangan_list is None:
         ruangan_list = load_json(RUANGAN_FILE)
     
+    #dapatkan queue hari ini
     try:
         queue_today = load_json(QUEUE_FILE)
     except FileNotFoundError:
         queue_today = []
     
-    # Show customer list
+    #tampilkan list customer
     print("\n\033[1;33mMemuat data customer...\033[0m")
     time.sleep(0.5)
     view_customer(customer_list, ruangan_list)
@@ -890,7 +909,7 @@ def delete_customer(customer_list, history_list, ruangan_list=None):
         time.sleep(1.5)
         return
     
-    # Get customer ID to delete
+    #input id 
     print("\n\033[1;35m" + "─"*50 + "\033[0m")
     try:
         cust_id = int(input("\033[1;34m⌨ Masukkan ID customer yang akan dihapus: \033[0m"))
@@ -899,19 +918,19 @@ def delete_customer(customer_list, history_list, ruangan_list=None):
         time.sleep(1.5)
         return
     
-    # Find customer
+    #cari customer yang diinput
     cust = next((c for c in customer_list if c['id'] == cust_id), None)
     if not cust:
         print("\n\033[1;31m❌ Customer tidak ditemukan!\033[0m")
         time.sleep(1.5)
         return
     
-    # Show customer details
+    #tampilkan detail customer
     print("\n\033[1;31m⚠️ DATA CUSTOMER YANG AKAN DIHAPUS:\033[0m")
     print(f"\033[1;33mID     : {cust['id']}")
     print(f"Nama   : {cust['nama']}")
     
-    # Show booking info if exists
+    #tampilkan info booking
     if cust.get('booking'):
         print("\n\033[1;36mBOOKING AKTIF:\033[0m")
         for booking in cust['booking']:
@@ -921,25 +940,25 @@ def delete_customer(customer_list, history_list, ruangan_list=None):
     
     print("\033[1;35m" + "─"*50 + "\033[0m")
     
-    # Confirmation
+    # konfirmasi
     confirm = input("\033[1;31mApakah Anda yakin ingin menghapus? (y/n): \033[0m").lower()
     if confirm != 'y':
         print("\n\033[1;33m🛑 Penghapusan dibatalkan\033[0m")
         time.sleep(1)
         return
     
-    # Perform deletion
+    #penghapusan
     try:
-        # 1. Remove from customer list
+        # 1. hapus dari customer list
         customer_list.remove(cust)
         
-        # 2. Remove from history
+        # 2. hapus dari history
         history_list[:] = [h for h in history_list if h.get('customer_id') != cust_id]
         
-        # 3. Remove from queue (both today and future bookings)
+        # 3. hapus dari queue hari ini dan booking selanjutnya (jika ada)
         queue_today[:] = [q for q in queue_today if q.get('customer_id') != cust_id]
         
-        # 4. Save all changes
+        # 4. simpan
         save_json(CUSTOMER_FILE, customer_list)
         save_json(HISTORY_FILE, history_list)
         save_json(QUEUE_FILE, queue_today)
@@ -954,6 +973,7 @@ def delete_customer(customer_list, history_list, ruangan_list=None):
     time.sleep(1.5)
 
 # --- HISTORY MANAGEMENT ---
+#fungsi melihat histori
 def view_riwayat(history_list, customer_list, ruangan_list):
     clear_screen()
     print("\033[1;36m" + "═"*80)
@@ -992,6 +1012,7 @@ def view_riwayat(history_list, customer_list, ruangan_list):
     print(f"\n\033[1;36mTotal riwayat: {len(history_list)}\033[0m")
     time.sleep(1.5)
 
+#fungsi tambah ke history
 def add_to_history(history_list, customer_id, ruangan_id, tanggal, jam, online):
     # Cek apakah ruangan sudah dipesan di tanggal dan jam yang sama
     for q in history_list:
@@ -1001,6 +1022,7 @@ def add_to_history(history_list, customer_id, ruangan_id, tanggal, jam, online):
             print("\033[1;31m❌ Ruangan sudah dipesan pada jam tersebut!\033[0m")
             return False
     
+    #tambah data
     history_list.append({
         'customer_id': customer_id,
         'ruangan_id': ruangan_id,
@@ -1009,37 +1031,50 @@ def add_to_history(history_list, customer_id, ruangan_id, tanggal, jam, online):
         'online': online,
         'waktu_booking': datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     })
-    save_json(HISTORY_FILE, history_list)
+    save_json(HISTORY_FILE, history_list) #simpan data di json
     print("\033[1;32m✓ Booking berhasil ditambahkan ke riwayat!\033[0m")
     return True
 
 # --- SEARCH & SORT FUNCTIONS ---
+# Fungsi untuk mencari dan mengurutkan data ruangan
 def search_sort_ruangan(ruangan_list):
+    # Membersihkan layar console
     clear_screen()
+    
+    # Menampilkan header menu
     print("\033[1;36m" + "═"*60)
     print(" "*20 + "🔍 CARI & URUTKAN RUANGAN")
     print("═"*60 + "\033[0m")
     
+    # Memeriksa apakah list ruangan kosong
     if not ruangan_list:
         print("\n\033[1;31m⚠ Tidak ada data ruangan yang tersedia!\033[0m")
         time.sleep(1.5)
         return
     
+    # Menampilkan pilihan menu
     print("\n\033[1;34mPilih Menu:\033[0m")
     print("\033[1;32m1. Cari berdasarkan Jenis Ruangan\033[0m")
     print("\033[1;33m2. Urutkan berdasarkan Kapasitas\033[0m")
     print("\033[1;31m0. Kembali ke Menu Utama\033[0m")
     
+    # Loop untuk memproses pilihan user
     while True:
         choice = input("\n\033[1;34m⌨ Pilihan Anda (0-2): \033[0m")
         
+        # Pilihan 1: Pencarian berdasarkan jenis ruangan
         if choice == '1':
+            # Meminta input jenis ruangan dari user
             keyword = input("\n\033[1;34m⌨ Masukkan jenis ruangan (Regular/VIP/VVIP): \033[0m").lower()
+            
+            # Mencari ruangan yang sesuai dengan keyword
             hasil = [r for r in ruangan_list if r['jenis'].lower() == keyword]
             
+            # Jika tidak ada hasil pencarian
             if not hasil:
                 print("\n\033[1;31m❌ Tidak ada ruangan dengan jenis tersebut!\033[0m")
             else:
+                # Menampilkan hasil pencarian dalam format tabel
                 print("\n\033[1;32m✓ Hasil Pencarian:\033[0m")
                 print("\033[1;35m{:<5} {:<10} {:<12} {:<25}\033[0m".format(
                     "ID", "Jenis", "Kapasitas", "Console"))
@@ -1049,16 +1084,21 @@ def search_sort_ruangan(ruangan_list):
                         r['id'], r['jenis'], f"{r['kapasitas']} orang", ', '.join(r['console'])))
             break
             
+        # Pilihan 2: Pengurutan berdasarkan kapasitas
         elif choice == '2':
+            # Menampilkan pilihan pengurutan
             print("\n\033[1;34mPilih Urutan:\033[0m")
             print("\033[1;32m1. Kapasitas Terkecil ke Terbesar\033[0m")
             print("\033[1;33m2. Kapasitas Terbesar ke Terkecil\033[0m")
             
+            # Meminta input pilihan pengurutan dari user
             sort_choice = input("\n\033[1;34m⌨ Pilihan Anda (1-2): \033[0m")
             
+            # Pengurutan ascending (kecil ke besar)
             if sort_choice == '1':
                 sorted_ruangan = sorted(ruangan_list, key=lambda r: r['kapasitas'])
                 print("\n\033[1;32m✓ Urutkan dari Kapasitas Terkecil:\033[0m")
+            # Pengurutan descending (besar ke kecil)
             elif sort_choice == '2':
                 sorted_ruangan = sorted(ruangan_list, key=lambda r: r['kapasitas'], reverse=True)
                 print("\n\033[1;32m✓ Urutkan dari Kapasitas Terbesar:\033[0m")
@@ -1066,6 +1106,7 @@ def search_sort_ruangan(ruangan_list):
                 print("\033[1;31m❌ Pilihan tidak valid!\033[0m")
                 continue
                 
+            # Menampilkan hasil pengurutan dalam format tabel
             print("\033[1;35m{:<5} {:<10} {:<12} {:<25}\033[0m".format(
                 "ID", "Jenis", "Kapasitas", "Console"))
             print("\033[1;34m" + "─"*60 + "\033[0m")
@@ -1074,81 +1115,112 @@ def search_sort_ruangan(ruangan_list):
                     r['id'], r['jenis'], f"{r['kapasitas']} orang", ', '.join(r['console'])))
             break
             
+        # Pilihan 0: Kembali ke menu utama
         elif choice == '0':
             return
             
+        # Pilihan tidak valid
         else:
             print("\033[1;31m❌ Pilihan tidak valid! Harap pilih 0-2.\033[0m")
     
     time.sleep(1.5)
 
+# Fungsi untuk mencari dan mengurutkan data customer
 def search_sort_customer(customer_list):
+    # Membersihkan layar console
     clear_screen()
+    
+    # Menampilkan header menu dengan warna cyan tebal
     print("\033[1;36m" + "═"*60)
     print(" "*20 + "🔍 CARI & URUTKAN CUSTOMER")
     print("═"*60 + "\033[0m")
     
+    # Memeriksa apakah list customer kosong
     if not customer_list:
         print("\n\033[1;31m⚠ Tidak ada data customer yang tersedia!\033[0m")
         time.sleep(1.5)
         return
     
+    # Menampilkan pilihan menu dengan warna berbeda untuk setiap opsi
     print("\n\033[1;34mPilih Menu:\033[0m")
-    print("\033[1;32m1. Cari berdasarkan Nama\033[0m")
-    print("\033[1;33m2. Urutkan dari A-Z\033[0m")
-    print("\033[1;35m3. Urutkan dari Z-A\033[0m")
-    print("\033[1;31m0. Kembali ke Menu Utama\033[0m")
+    print("\033[1;32m1. Cari berdasarkan Nama\033[0m")  # Hijau
+    print("\033[1;33m2. Urutkan dari A-Z\033[0m")       # Kuning
+    print("\033[1;35m3. Urutkan dari Z-A\033[0m")       # Ungu
+    print("\033[1;31m0. Kembali ke Menu Utama\033[0m")  # Merah
     
+    # Loop untuk memproses pilihan user
     while True:
         choice = input("\n\033[1;34m⌨ Pilihan Anda (0-3): \033[0m")
         
+        # Pilihan 1: Pencarian berdasarkan nama customer
         if choice == '1':
+            # Meminta input nama customer dari user (case insensitive)
             keyword = input("\n\033[1;34m⌨ Masukkan nama customer: \033[0m").lower()
+            
+            # Mencari customer yang mengandung keyword dalam namanya
             hasil = [c for c in customer_list if keyword in c['nama'].lower()]
             
+            # Jika tidak ada hasil pencarian
             if not hasil:
                 print("\n\033[1;31m❌ Customer tidak ditemukan!\033[0m")
             else:
+                # Menampilkan hasil pencarian dalam format tabel
                 print("\n\033[1;32m✓ Hasil Pencarian:\033[0m")
                 print("\033[1;35m{:<5} {:<25}\033[0m".format("ID", "Nama"))
                 print("\033[1;34m" + "─"*40 + "\033[0m")
                 for c in hasil:
-                    print("\033[1;36m{:<5}\033[0m \033[1;33m{:<25}\033[0m".format(c['id'], c['nama']))
+                    print("\033[1;36m{:<5}\033[0m \033[1;33m{:<25}\033[0m".format(
+                        c['id'], c['nama']))
             break
             
+        # Pilihan 2: Pengurutan A-Z (ascending)
         elif choice == '2':
+            # Mengurutkan customer berdasarkan nama (case insensitive)
             sorted_cust = sorted(customer_list, key=lambda c: c['nama'].lower())
             print("\n\033[1;32m✓ Urutkan dari A-Z:\033[0m")
+            # Menampilkan header tabel
             print("\033[1;35m{:<5} {:<25}\033[0m".format("ID", "Nama"))
             print("\033[1;34m" + "─"*40 + "\033[0m")
+            # Menampilkan data customer yang sudah diurutkan
             for c in sorted_cust:
-                print("\033[1;36m{:<5}\033[0m \033[1;33m{:<25}\033[0m".format(c['id'], c['nama']))
+                print("\033[1;36m{:<5}\033[0m \033[1;33m{:<25}\033[0m".format(
+                    c['id'], c['nama']))
             break
             
+        # Pilihan 3: Pengurutan Z-A (descending)
         elif choice == '3':
+            # Mengurutkan customer berdasarkan nama (case insensitive) secara terbalik
             sorted_cust = sorted(customer_list, key=lambda c: c['nama'].lower(), reverse=True)
             print("\n\033[1;32m✓ Urutkan dari Z-A:\033[0m")
+            # Menampilkan header tabel
             print("\033[1;35m{:<5} {:<25}\033[0m".format("ID", "Nama"))
             print("\033[1;34m" + "─"*40 + "\033[0m")
+            # Menampilkan data customer yang sudah diurutkan
             for c in sorted_cust:
-                print("\033[1;36m{:<5}\033[0m \033[1;33m{:<25}\033[0m".format(c['id'], c['nama']))
+                print("\033[1;36m{:<5}\033[0m \033[1;33m{:<25}\033[0m".format(
+                    c['id'], c['nama']))
             break
             
+        # Pilihan 0: Kembali ke menu utama
         elif choice == '0':
             return
             
+        # Pilihan tidak valid
         else:
             print("\033[1;31m❌ Pilihan tidak valid! Harap pilih 0-3.\033[0m")
     
     time.sleep(1.5)
 
+# Fungsi untuk menampilkan teks dengan efek animasi ketik
 def animate_text(text, delay=0.01):
     for char in text:
+        # Menulis karakter satu per satu
         sys.stdout.write(char)
-        sys.stdout.flush()
-        time.sleep(delay)
+        sys.stdout.flush()  
+        time.sleep(delay)   
     print()
 
+# ----- MENU ADMIN -----
 def admin_menu():
     ruangan_list = load_json(RUANGAN_FILE)
     customer_list = load_json(CUSTOMER_FILE)
@@ -1249,11 +1321,11 @@ def admin_menu():
             view_riwayat(history_list, customer_list, ruangan_list)
             input("\n\033[1;36mTekan Enter untuk melanjutkan...\033[0m")
 
-        elif choice == '4':  # Tambahan untuk menu booking online
+        elif choice == '4': 
             view_online_bookings(ruangan_list)
             input("\n\033[1;36mTekan Enter untuk melanjutkan...\033[0m")
 
-        elif choice == '5':  # Add this new option
+        elif choice == '5':
             monitor_today_customers(customer_list, ruangan_list)
             input("\n\033[1;36mTekan Enter untuk melanjutkan...\033[0m")
 

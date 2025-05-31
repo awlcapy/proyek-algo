@@ -1,3 +1,4 @@
+# Import modul dan fungsi yang diperlukan
 from utils import load_json, save_json, next_id, RUANGAN_FILE, CUSTOMER_FILE, HISTORY_FILE, ONLINE_FILE, QUEUE_FILE
 from admin import add_to_history
 from datetime import datetime, date
@@ -6,17 +7,20 @@ import sys
 import time
 import random
 
+# Fungsi untuk membersihkan layar console
 def clear_screen():
     os.system('cls' if os.name == 'nt' else 'clear')
 
+# Fungsi untuk menampilkan teks dengan efek animasi ketik berwarna-warni
 def animate_text(text, delay=0.03):
     colors = ['\033[1;31m', '\033[1;32m', '\033[1;33m', '\033[1;34m', '\033[1;35m', '\033[1;36m']
     for char in text:
-        sys.stdout.write(random.choice(colors) + char)
-        sys.stdout.flush()
-        time.sleep(delay)
-    print('\033[0m')
+        sys.stdout.write(random.choice(colors) + char)  # Tulis karakter dengan warna acak
+        sys.stdout.flush()  # Pastikan karakter langsung ditampilkan
+        time.sleep(delay)   # Jeda antara karakter
+    print('\033[0m')  # Reset warna setelah selesai
 
+# Fungsi untuk menampilkan seni pixel CYBERNEST
 def draw_pixel_art():
     pixel_art = [
         "  ╔═════════════════════════╗",
@@ -31,6 +35,7 @@ def draw_pixel_art():
         animate_text(line, 0.01)
         time.sleep(0.05)
 
+# Fungsi untuk menampilkan animasi loading
 def loading_animation(duration=2):
     frames = ['[■□□□□]', '[■■□□□]', '[■■■□□]', '[■■■■□]', '[■■■■■]']
     end_time = time.time() + duration
@@ -38,31 +43,39 @@ def loading_animation(duration=2):
         for frame in frames:
             print(f"\r\033[1;35m{frame} Loading...\033[0m", end='')
             time.sleep(0.3)
-    print('\r' + ' ' * 30 + '\r', end='')
+    print('\r' + ' ' * 30 + '\r', end='')  # Bersihkan baris loading
 
+# Fungsi untuk menampilkan efek fireworks (kembang api)
 def fireworks():
     for _ in range(5):
         print(" " * random.randint(0, 50) + random.choice(["✨", "💥", "🌟"]))
         time.sleep(0.1)
-    print("\033[5F")  # Move cursor up 5 lines
+    print("\033[5F")  # Gerakkan cursor ke atas 5 baris
 
+# Fungsi untuk menampilkan banner sistem
 def show_banner():
     animate_text("   🎮 CYBERNEST BOOKING SYSTEM 🎮")
     print("*"*50 + "\033[0m")
 
+# Fungsi untuk validasi format tanggal
 def validate_date(input_date):
     try:
         return datetime.strptime(input_date, "%Y-%m-%d").date()
     except ValueError:
         return None
 
+# Fungsi untuk mendapatkan jam yang tersedia pada ruangan tertentu di tanggal tertentu
 def get_available_hours(history_list, ruangan_id, tanggal):
+    # Ambil semua jam yang sudah dibooking untuk ruangan dan tanggal tertentu
     booked_hours = [q['jam'] for q in history_list 
                    if q['ruangan_id'] == ruangan_id 
                    and q['tanggal'] == str(tanggal)]
+    # Kembalikan jam yang tersedia (7-23) kecuali yang sudah dibooking
     return [h for h in range(7, 23) if h not in booked_hours]
 
+# Fungsi untuk menampilkan ruangan yang tersedia
 def show_available_rooms(ruangan_list, history_list, booking_date=None):
+    # Jika tanggal tidak disediakan, minta input dari user
     if booking_date is None:
         while True:
             clear_screen()
@@ -79,6 +92,7 @@ def show_available_rooms(ruangan_list, history_list, booking_date=None):
     
     loading_animation(1)
     
+    # Tampilkan daftar ruangan dengan status ketersediaan
     print("\n" + "="*80)
     animate_text("🎮 DAFTAR RUANGAN CYBERNEST")
     print("="*80)
@@ -91,6 +105,7 @@ def show_available_rooms(ruangan_list, history_list, booking_date=None):
         print(f"{room['id']:<5} {room['jenis']:<10} {room['kapasitas']:<12} {console:<20} {status}")
     print("="*80)
     
+    # Minta user memilih ruangan
     while True:
         try:
             room_id = int(input("\n\033[1;33m🎮 Pilih ID Ruangan (0 untuk batal): \033[0m"))
@@ -104,11 +119,13 @@ def show_available_rooms(ruangan_list, history_list, booking_date=None):
     
     available_hours = get_available_hours(history_list, room_id, str(booking_date))
     
+    # Jika tidak ada jam tersedia
     if not available_hours:
         animate_text(f"\n❌ Ruangan {selected_room['jenis']} (ID: {room_id}) sudah penuh pada {booking_date}!")
         time.sleep(1.5)
         return None, None, None
     
+    # Tampilkan slot waktu yang tersedia
     print(f"\n" + "="*50)
     animate_text(f"⏰ SLOT WAKTU TERSEDIA - {selected_room['jenis'].upper()}")
     print("="*50)
@@ -118,6 +135,7 @@ def show_available_rooms(ruangan_list, history_list, booking_date=None):
     
     return booking_date, room_id, available_hours
 
+# Fungsi untuk melakukan booking online
 def online_booking(ruangan_list, history_list):
     clear_screen()
     draw_pixel_art()
@@ -125,6 +143,7 @@ def online_booking(ruangan_list, history_list):
     animate_text("📅 BOOKING ONLINE")
     print("="*50)
     
+    # Input data pelanggan
     print("\n" + "✧"*40)
     animate_text("👤 INFORMASI PELANGGAN")
     print("✧"*40)
@@ -141,6 +160,7 @@ def online_booking(ruangan_list, history_list):
             break
         print("\033[1;31m❌ Nomor HP harus angka minimal 10 digit!\033[0m")
 
+    # Input tanggal booking
     print("\n" + "✧"*40)
     animate_text("📅 TANGGAL BOOKING")
     print("✧"*40)
@@ -153,11 +173,13 @@ def online_booking(ruangan_list, history_list):
 
     customer_list = load_json(CUSTOMER_FILE)
     
+    # Proses pemilihan ruangan
     while True:
         clear_screen()
         animate_text("🎮 MEMUAT DAFTAR RUANGAN...")
         loading_animation(1)
         
+        # Tampilkan daftar ruangan
         print("\n" + "✧"*80)
         animate_text("🎮 DAFTAR RUANGAN TERSEDIA")
         print("✧"*80)
@@ -187,6 +209,7 @@ def online_booking(ruangan_list, history_list):
         time.sleep(1.5)
         return
     
+    # Proses pemilihan waktu booking
     while True:
         print(f"\n" + "✧"*50)
         animate_text(f"⏰ PILIH WAKTU - {selected_room['jenis'].upper()}")
@@ -203,14 +226,17 @@ def online_booking(ruangan_list, history_list):
                 start_hour = available_hours[slot_choice-1]
                 
                 duration = int(input("\033[1;33m⏳ Durasi (1-4 jam): \033[0m"))
-                duration = max(1, min(4, duration))
+                duration = max(1, min(4, duration))  # Pastikan durasi antara 1-4 jam
                 
+                # Periksa ketersediaan untuk durasi yang diminta
                 if all(h in available_hours for h in range(start_hour, start_hour + duration)):
                     animate_text("\n🔍 Memproses booking...")
                     loading_animation(2)
                     
+                    # Buat ID customer baru
                     cust_id = next_id(customer_list)
                     
+                    # Buat data customer baru
                     new_customer = {
                         'id': cust_id,
                         'nama': name,
@@ -222,13 +248,16 @@ def online_booking(ruangan_list, history_list):
                         } for hour in range(start_hour, start_hour + duration)]
                     }
 
+                    # Simpan data customer
                     customer_list.append(new_customer)
                     save_json(CUSTOMER_FILE, customer_list)
                     
+                    # Tambahkan ke history
                     for hour in range(start_hour, start_hour + duration):
                         add_to_history(history_list, cust_id, room_id, str(booking_date), hour, online=True)
                     save_json(HISTORY_FILE, history_list)
 
+                    # Buat data booking online
                     online_booking_data = {
                         'customer_id': cust_id,
                         'nama': name,
@@ -241,10 +270,12 @@ def online_booking(ruangan_list, history_list):
                         'timestamp': datetime.now().strftime("%Y-%m-%d %H:%M:%S")
                     }
                     
+                    # Simpan booking online
                     online_bookings = load_json(ONLINE_FILE)
                     online_bookings.append(online_booking_data)
                     save_json(ONLINE_FILE, online_bookings)
 
+                    # Jika booking untuk hari ini, tambahkan ke antrian
                     today = datetime.now().strftime('%Y-%m-%d')
                     if str(booking_date) == today:
                         try:
@@ -264,6 +295,7 @@ def online_booking(ruangan_list, history_list):
                     queue_today.append(new_booking)
                     save_json(QUEUE_FILE, queue_today)
 
+                    # Tampilkan konfirmasi booking
                     clear_screen()
                     print("\n" + "✧"*60)
                     animate_text("✨ BOOKING BERHASIL DIBUAT ✨")
@@ -274,6 +306,7 @@ def online_booking(ruangan_list, history_list):
                     print(f"\033[1;34m{'⏰ Waktu:':<20} \033[1;33m{start_hour:02d}:00-{start_hour+duration:02d}:00")
                     print("✧"*60)
                     
+                    # Tampilkan efek visual
                     fireworks()
                     for _ in range(3):
                         print("\n" + " ".join(random.choice(["🎮", "👾", "🕹️", "🎯"]) for _ in range(15)))
@@ -291,6 +324,7 @@ def online_booking(ruangan_list, history_list):
             print("\033[1;31m❌ Input harus angka!\033[0m")
             time.sleep(0.5)
 
+# Fungsi untuk memeriksa status booking
 def check_booking_status():
     clear_screen()
     show_banner()
@@ -298,6 +332,7 @@ def check_booking_status():
     animate_text("🔍 CEK STATUS BOOKING")
     print("="*50)
     
+    # Input data pelanggan
     print("\n" + "✧"*40)
     animate_text("👤 MASUKKAN DATA ANDA")
     print("✧"*40)
@@ -308,12 +343,13 @@ def check_booking_status():
     animate_text("\n🔍 Mencari data booking...")
     loading_animation(1.5)
     
-    # Check in online bookings
+    # Cari data booking online
     online_bookings = load_json(ONLINE_FILE)
     customer_bookings = [b for b in online_bookings 
                         if b['nama'].lower() == name.lower() 
                         and b['telepon'] == phone]
     
+    # Jika tidak ditemukan
     if not customer_bookings:
         print("\n" + "✧"*60)
         animate_text("❌ TIDAK ADA DATA BOOKING DITEMUKAN!")
@@ -323,6 +359,7 @@ def check_booking_status():
     
     ruangan_list = load_json(RUANGAN_FILE)
     
+    # Tampilkan hasil pencarian
     clear_screen()
     print("\n" + "✧"*70)
     animate_text(f"📋 STATUS BOOKING UNTUK: {name.upper()}")
@@ -344,6 +381,7 @@ def check_booking_status():
     print("\n" + "✧"*70)
     input("\n\033[1;36m🎮 Tekan Enter untuk kembali...\033[0m")
 
+#-----CUSTOMER MENU-----
 def customer_menu():
     ruangan_list = load_json(RUANGAN_FILE)
     history_list = load_json(HISTORY_FILE)
